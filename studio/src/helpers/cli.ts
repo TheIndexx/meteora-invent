@@ -49,12 +49,18 @@ export function parseCliArguments(): CliArguments {
       config: {
         type: 'string',
       },
+      'base-mint': {
+        type: 'string',
+      },
     },
     strict: true,
     allowPositionals: true,
   });
 
-  return values;
+  return {
+    config: values.config,
+    baseMint: values['base-mint'],
+  };
 }
 
 export async function parseConfigFromCli(): Promise<MeteoraConfig> {
@@ -80,6 +86,12 @@ export async function parseConfigFromCli(): Promise<MeteoraConfig> {
   console.log(`> Using config file: ${configFilePath}`);
 
   const config: MeteoraConfig = await safeParseJsonFromFile(configFilePath);
+
+  // Override baseMint if provided via CLI
+  if (cliArguments.baseMint) {
+    console.log(`> Overriding baseMint from CLI: ${cliArguments.baseMint}`);
+    config.baseMint = cliArguments.baseMint;
+  }
 
   validateConfig(config);
 

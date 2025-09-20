@@ -3,6 +3,7 @@ import BN from 'bn.js';
 
 export interface CliArguments {
   config?: string | undefined;
+  baseMint?: string | undefined;
 }
 
 /* COMMON */
