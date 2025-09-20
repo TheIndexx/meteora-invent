@@ -1,0 +1,14 @@
+{
+  "name": "Prod",
+  "symbol": "PROD",
+  "mint": "2APLHKFuizFAU1VtjiKosS4DvdZuFNL3De2bX4h87nez",
+  "decimals": 9,
+  "totalSupply": 1000000000,
+  "displaySupply": 1,
+  "tokenAccount": "58LKvXo86jKg9mtPoqLWGqvRFZkEpD22Fvtey7ALbVF8",
+  "createSignature": "5d6BSNksC81iCmk1nxfSNUbHAWBGmmNoeRB5zp2sDosRN3oTPQStNZu7huK2DuwfkDznydciD43Y2E5D38WFJoU7",
+  "mintSignature": "GHmZC6vmrWUTRtM5LuxfZDZ9xPy9Li8HQxGdQRVsrhmTyVhUKpFqRJmPSgzN48WEkziBkEu9oP2P37pEnoRTZ2z",
+  "network": "mainnet",
+  "createdAt": "2025-09-20T08:05:38.894Z",
+  "explorerUrl": "https://solscan.io/token/2APLHKFuizFAU1VtjiKosS4DvdZuFNL3De2bX4h87nez"
+}
