@@ -251,7 +251,7 @@ function parseArguments() {
     name: null,
     symbol: null,
     decimals: 9,
-    totalSupply: 1000000000, // 1 billion tokens with 9 decimals = 1B display tokens
+    totalSupply: 1000000000000000000, // 1 billion display tokens with 9 decimals (1B * 10^9)
     network: 'devnet',
     walletPath: null,
     privateKey: null,
