@@ -16,7 +16,7 @@
    * 2. damm-v2-create-one-sided-pool
    * SOL: So11111111111111111111111111111111111111112 | USDC: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v | any other token address
    */
-  "quoteMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "quoteMint": "So11111111111111111111111111111111111111112",
 
   /* Either use baseMint or createBaseToken, but not both.
    * baseMint can be provided via CLI using --base-mint parameter or in config
