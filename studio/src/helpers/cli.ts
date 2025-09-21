@@ -1,11 +1,12 @@
 import { CliArguments, MeteoraConfig, NetworkConfig } from '../utils/types';
 import { parseArgs } from 'util';
-import { safeParseJsonFromFile } from './utils';
+import { safeParseJsonFromFile, safeParseKeypairFromFile, parseKeypairFromPrivateKey } from './utils';
 import { validateConfig } from './validation';
 import { parse } from 'csv-parse';
 import fs from 'fs';
 import path from 'path';
 import * as readline from 'readline';
+import { Keypair } from '@solana/web3.js';
 
 export function parseNetworkFlag(): string | undefined {
   const { values } = parseArgs({
@@ -52,14 +53,22 @@ export function parseCliArguments(): CliArguments {
       'base-mint': {
         type: 'string',
       },
+      'wallet-pk': {
+        type: 'string',
+      },
+      'pool-address': {
+        type: 'string',
+      },
     },
-    strict: true,
+    strict: false,
     allowPositionals: true,
   });
 
   return {
-    config: values.config,
-    baseMint: values['base-mint'],
+    config: typeof values.config === 'string' ? values.config : undefined,
+    baseMint: typeof values['base-mint'] === 'string' ? values['base-mint'] : undefined,
+    walletPk: typeof values['wallet-pk'] === 'string' ? values['wallet-pk'] : undefined,
+    poolAddress: typeof values['pool-address'] === 'string' ? values['pool-address'] : undefined,
   };
 }
 
@@ -96,6 +105,16 @@ export async function parseConfigFromCli(): Promise<MeteoraConfig> {
   validateConfig(config);
 
   return config;
+}
+
+export async function getKeypairFromCliOrConfig(config: MeteoraConfig, walletPk?: string): Promise<Keypair> {
+  if (walletPk) {
+    console.log('> Using wallet private key from CLI argument');
+    return parseKeypairFromPrivateKey(walletPk);
+  } else {
+    console.log(`> Using keypair file path ${config.keypairFilePath}`);
+    return await safeParseKeypairFromFile(config.keypairFilePath);
+  }
 }
 
 export async function parseCsv<T>(filePath: string): Promise<Array<T>> {

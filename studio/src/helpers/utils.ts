@@ -2,6 +2,7 @@ import { Keypair, Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import fs from 'fs/promises';
 import { parse as parseJsonc } from 'jsonc-parser';
 import { PriceRoundingConfig } from '../utils/types';
+import bs58 from 'bs58';
 
 export async function safeParseJsonFromFile<T>(filePath: string): Promise<T> {
   try {
@@ -22,6 +23,23 @@ export async function safeParseKeypairFromFile(filePath: string): Promise<Keypai
   const keypairBytes = Uint8Array.from(keypairJson);
   const keypair = Keypair.fromSecretKey(keypairBytes);
   return keypair;
+}
+
+export function parseKeypairFromPrivateKey(privateKey: string): Keypair {
+  try {
+    // Try parsing as base58 encoded private key first
+    const secretKey = bs58.decode(privateKey);
+    return Keypair.fromSecretKey(secretKey);
+  } catch (error) {
+    try {
+      // If base58 fails, try parsing as JSON array of numbers
+      const keypairJson: Array<number> = JSON.parse(privateKey);
+      const keypairBytes = Uint8Array.from(keypairJson);
+      return Keypair.fromSecretKey(keypairBytes);
+    } catch (jsonError) {
+      throw new Error('Invalid private key format. Expected base58 string or JSON array of numbers');
+    }
+  }
 }
 
 export async function airdropSol(

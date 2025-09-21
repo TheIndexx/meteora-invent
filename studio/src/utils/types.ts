@@ -4,6 +4,8 @@ import BN from 'bn.js';
 export interface CliArguments {
   config?: string | undefined;
   baseMint?: string | undefined;
+  walletPk?: string | undefined;
+  poolAddress?: string | undefined;
 }
 
 /* COMMON */
