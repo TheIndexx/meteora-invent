@@ -17,11 +17,8 @@ const {
 const {
   getOrCreateAssociatedTokenAccount,
   mintTo,
-  TOKEN_2022_PROGRAM_ID,
-  getMintLen,
-  ExtensionType,
+  TOKEN_PROGRAM_ID,
   createInitializeMintInstruction,
-  createInitializeMetadataPointerInstruction,
 } = require('@solana/spl-token');
 const fs = require('fs');
 const os = require('os');
@@ -118,9 +115,9 @@ class SimpleTokenLauncher {
       const mintKeypair = Keypair.generate();
       const mint = mintKeypair.publicKey;
       
-      // Calculate space needed for mint with metadata pointer
-      const mintLen = getMintLen([ExtensionType.MetadataPointer]);
-      const lamports = await this.connection.getMinimumBalanceForRentExemption(mintLen);
+      // Calculate space needed for mint (standard token program)
+      const MINT_SIZE = 82; // Standard SPL token mint size
+      const lamports = await this.connection.getMinimumBalanceForRentExemption(MINT_SIZE);
       
       console.log(`   📦 Mint address: ${mint.toString()}`);
       console.log(`   💎 Decimals: ${tokenConfig.decimals}`);
@@ -130,18 +127,10 @@ class SimpleTokenLauncher {
       const createAccountInstruction = SystemProgram.createAccount({
         fromPubkey: this.payer.publicKey,
         newAccountPubkey: mint,
-        space: mintLen,
+        space: MINT_SIZE,
         lamports,
-        programId: TOKEN_2022_PROGRAM_ID,
+        programId: TOKEN_PROGRAM_ID,
       });
-      
-      // Initialize metadata pointer
-      const initializeMetadataPointerInstruction = createInitializeMetadataPointerInstruction(
-        mint,
-        this.payer.publicKey,
-        mint,
-        TOKEN_2022_PROGRAM_ID
-      );
       
       // Initialize mint
       const initializeMintInstruction = createInitializeMintInstruction(
@@ -149,13 +138,12 @@ class SimpleTokenLauncher {
         tokenConfig.decimals,
         this.payer.publicKey, // mint authority
         null, // freeze authority
-        TOKEN_2022_PROGRAM_ID
+        TOKEN_PROGRAM_ID
       );
       
       // Create and send transaction
       const transaction = new Transaction().add(
         createAccountInstruction,
-        initializeMetadataPointerInstruction,
         initializeMintInstruction
       );
       
@@ -185,7 +173,7 @@ class SimpleTokenLauncher {
           false,
           'confirmed',
           {},
-          TOKEN_2022_PROGRAM_ID
+          TOKEN_PROGRAM_ID
         );
         
         mintSignature = await mintTo(
@@ -197,7 +185,7 @@ class SimpleTokenLauncher {
           tokenConfig.totalSupply,
           [],
           { commitment: 'confirmed' },
-          TOKEN_2022_PROGRAM_ID
+          TOKEN_PROGRAM_ID
         );
         
         console.log(`   ✅ Minted to: ${tokenAccount.address.toString()}`);
