@@ -26,12 +26,13 @@ const path = require('path');
 const bs58 = require('bs58');
 
 class SimpleTokenLauncher {
-  constructor(network = 'devnet', walletPath = null, privateKey = null) {
+  constructor(network = 'devnet', walletPath = null, privateKey = null, rpcUrl = null) {
     // Setup connection based on network
     if (network === 'mainnet') {
-      const rpcUrl = process.env.HELIUS_RPC_URL || 'https://api.mainnet-beta.solana.com';
-      this.connection = new Connection(rpcUrl, 'confirmed');
+      const mainnetRpcUrl = rpcUrl || process.env.HELIUS_RPC_URL || 'https://api.mainnet-beta.solana.com';
+      this.connection = new Connection(mainnetRpcUrl, 'confirmed');
       console.log(`🌐 Connected to: mainnet-beta`);
+      console.log(`🔗 RPC URL: ${mainnetRpcUrl}`);
     } else {
       this.connection = new Connection('https://api.devnet.solana.com', 'confirmed');
       console.log(`🌐 Connected to: devnet`);
@@ -243,6 +244,7 @@ function parseArguments() {
     network: 'devnet',
     walletPath: null,
     privateKey: null,
+    rpcUrl: null,
     output: null
   };
 
@@ -276,6 +278,10 @@ function parseArguments() {
         break;
       case '--private-key':
         config.privateKey = args[i + 1];
+        i++;
+        break;
+      case '--rpc-url':
+        config.rpcUrl = args[i + 1];
         i++;
         break;
       case '--output':
@@ -340,7 +346,7 @@ async function main() {
     console.log(`   Network: ${config.network}`);
 
     // Create token
-    const launcher = new SimpleTokenLauncher(config.network, config.walletPath, config.privateKey);
+    const launcher = new SimpleTokenLauncher(config.network, config.walletPath, config.privateKey, config.rpcUrl);
     const result = await launcher.createToken(config);
 
     // Save results
