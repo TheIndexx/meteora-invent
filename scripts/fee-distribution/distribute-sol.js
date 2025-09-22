@@ -59,6 +59,10 @@ async function main() {
   console.log(`  👤 Creator: ${parsedCreatorAmount} SOL`);
   console.log(`  💳 Fee Payer: Platform Wallet`);
 
+  // Check initial balance of fee wallet
+  const initialBalance = await connection.getBalance(feeWallet.publicKey);
+  console.log(`  📊 Fee wallet initial balance: ${initialBalance / 1e9} SOL (${initialBalance} lamports)`);
+
   // Transfer to platform wallet (if amount > 0)
   if (parsedPlatformAmount > 0.0001) { // Only transfer meaningful amounts
     console.log(`  🏢 Transferring ${parsedPlatformAmount} SOL to platform...`);
@@ -79,6 +83,10 @@ async function main() {
     });
 
     console.log(`    ✅ Platform transfer completed: ${platformTxSignature}`);
+
+    // Check balance after platform transfer
+    const balanceAfterPlatform = await connection.getBalance(feeWallet.publicKey);
+    console.log(`    📊 Fee wallet balance after platform transfer: ${balanceAfterPlatform / 1e9} SOL (${balanceAfterPlatform} lamports)`);
   } else {
     console.log(`    ⏭️  Skipping platform transfer (amount too small: ${parsedPlatformAmount})`);
   }
@@ -103,11 +111,21 @@ async function main() {
     });
 
     console.log(`    ✅ Creator transfer completed: ${creatorTxSignature}`);
+
+    // Check balance after creator transfer
+    const balanceAfterCreator = await connection.getBalance(feeWallet.publicKey);
+    console.log(`    📊 Fee wallet balance after creator transfer: ${balanceAfterCreator / 1e9} SOL (${balanceAfterCreator} lamports)`);
   } else {
     console.log(`    ⏭️  Skipping creator transfer (amount too small: ${parsedCreatorAmount})`);
   }
 
   const totalTransferred = results.reduce((sum, result) => sum + result.amount, 0);
+
+  // Check final balance of fee wallet
+  const finalBalance = await connection.getBalance(feeWallet.publicKey);
+  console.log(`  📊 Fee wallet final balance: ${finalBalance / 1e9} SOL (${finalBalance} lamports)`);
+  console.log(`  📊 Total transferred: ${totalTransferred} SOL`);
+  console.log(`  📊 Expected remaining: ${(initialBalance / 1e9) - totalTransferred} SOL`);
 
   return createSuccessResponse({
     operation: 'distribute-sol',

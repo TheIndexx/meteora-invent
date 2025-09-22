@@ -38,6 +38,12 @@ export class JupiterPaymentsAsSwap {
       console.log(`  🎯 Asset Vault: ${assetVaultPubkey.slice(0, 8)}...`);
       console.log(`  🔗 Token: ${tokenMint.slice(0, 8)}...`);
 
+      // Check balances before Jupiter operations
+      const initialFeeWalletBalance = await this.connection.getBalance(feeWallet.publicKey);
+      const initialPlatformWalletBalance = await this.connection.getBalance(platformWallet.publicKey);
+      console.log(`  📊 Fee wallet balance before Jupiter: ${initialFeeWalletBalance / 1e9} SOL (${initialFeeWalletBalance} lamports)`);
+      console.log(`  📊 Platform wallet balance before Jupiter: ${initialPlatformWalletBalance / 1e9} SOL (${initialPlatformWalletBalance} lamports)`);
+
       // Step 1: Get the Associated Token Account for the asset vault
       const tokenMintPubkey = parsePublicKey(tokenMint);
       const destinationTokenAccount = await getAssociatedTokenAddress(
@@ -77,6 +83,14 @@ export class JupiterPaymentsAsSwap {
       });
 
       console.log(`  ✅ Swap completed: ${signature}`);
+
+      // Check balances after Jupiter swap
+      const finalFeeWalletBalance = await this.connection.getBalance(feeWallet.publicKey);
+      const finalPlatformWalletBalance = await this.connection.getBalance(platformWallet.publicKey);
+      console.log(`  📊 Fee wallet balance after Jupiter: ${finalFeeWalletBalance / 1e9} SOL (${finalFeeWalletBalance} lamports)`);
+      console.log(`  📊 Platform wallet balance after Jupiter: ${finalPlatformWalletBalance / 1e9} SOL (${finalPlatformWalletBalance} lamports)`);
+      console.log(`  📊 Fee wallet difference: ${(initialFeeWalletBalance - finalFeeWalletBalance) / 1e9} SOL`);
+      console.log(`  📊 Platform wallet difference: ${(initialPlatformWalletBalance - finalPlatformWalletBalance) / 1e9} SOL`);
 
       return {
         success: true,
