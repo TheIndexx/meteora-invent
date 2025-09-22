@@ -43,6 +43,9 @@ async function main() {
 
   console.log(`- Using base token mint ${baseMint.toString()}`);
   console.log(`- Using quote token mint ${quoteMint.toString()}`);
+  if (config.dammV2Config) {
+    console.log(`- Using creator ${config.dammV2Config.creator}`);
+  }
 
   /// --------------------------------------------------------------------------
   if (config.dammV2Config) {

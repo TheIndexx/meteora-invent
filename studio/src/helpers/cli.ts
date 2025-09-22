@@ -59,6 +59,9 @@ export function parseCliArguments(): CliArguments {
       'pool-address': {
         type: 'string',
       },
+      'creator': {
+        type: 'string',
+      },
     },
     strict: false,
     allowPositionals: true,
@@ -69,6 +72,7 @@ export function parseCliArguments(): CliArguments {
     baseMint: typeof values['base-mint'] === 'string' ? values['base-mint'] : undefined,
     walletPk: typeof values['wallet-pk'] === 'string' ? values['wallet-pk'] : undefined,
     poolAddress: typeof values['pool-address'] === 'string' ? values['pool-address'] : undefined,
+    creator: typeof values['creator'] === 'string' ? values['creator'] : undefined,
   };
 }
 
@@ -100,6 +104,12 @@ export async function parseConfigFromCli(): Promise<MeteoraConfig> {
   if (cliArguments.baseMint) {
     console.log(`> Overriding baseMint from CLI: ${cliArguments.baseMint}`);
     config.baseMint = cliArguments.baseMint;
+  }
+
+  // Override creator if provided via CLI (for DAMM V2 configs)
+  if (cliArguments.creator && 'dammV2Config' in config && config.dammV2Config) {
+    console.log(`> Overriding creator from CLI: ${cliArguments.creator}`);
+    config.dammV2Config.creator = cliArguments.creator;
   }
 
   validateConfig(config);

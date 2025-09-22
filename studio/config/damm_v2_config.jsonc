@@ -30,7 +30,7 @@
    * 1. damm-v2-claim-position-fee
    * 2. damm-v2-split-position
    */
-   "poolAddress": "8X5muuEoWVxooc3QNRZVRZ1nXMZ6XmNt1NVeVCydaoVp",
+  // "poolAddress": "CreTodLisHgkv1BGPGwmmtUHv1p82xdQ2nhJ7cgnQTke",
 
   /* dammV2Config is only used in the following actions:
    * 1. damm-v2-create-balanced-pool

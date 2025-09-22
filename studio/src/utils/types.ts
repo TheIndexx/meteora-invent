@@ -6,6 +6,7 @@ export interface CliArguments {
   baseMint?: string | undefined;
   walletPk?: string | undefined;
   poolAddress?: string | undefined;
+  creator?: string | undefined;
 }
 
 /* COMMON */
