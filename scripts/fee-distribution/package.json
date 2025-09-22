@@ -1,0 +1,22 @@
+{
+  "name": "@meteora-invent/fee-distribution",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Jupiter payments-as-swap scripts for fee distribution",
+  "scripts": {
+    "swap-fee-to-asset": "node swap-fee-to-asset.js",
+    "distribute-sol": "node distribute-sol.js"
+  },
+  "dependencies": {
+    "@jup-ag/api": "^6.0.0",
+    "@solana/web3.js": "^1.95.0",
+    "@solana/spl-token": "^0.4.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "bn.js": "^5.2.1",
+    "bs58": "^5.0.0",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
