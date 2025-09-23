@@ -1,0 +1,20 @@
+{
+  "name": "jupiter-limit-cli",
+  "version": "1.0.0",
+  "description": "Jupiter Limit Order CLI Tool",
+  "main": "jupiter_limit.js",
+  "type": "module",
+  "bin": {
+    "jupiter-limit": "./jupiter_limit.js"
+  },
+  "scripts": {
+    "start": "node jupiter_limit.js"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.87.6",
+    "@solana/spl-token": "^0.3.8",
+    "commander": "^11.1.0",
+    "node-fetch": "^3.3.2",
+    "bs58": "^5.0.0"
+  }
+}
