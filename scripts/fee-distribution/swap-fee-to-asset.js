@@ -51,19 +51,12 @@ async function main() {
     platformWalletKey
   });
 
-  console.log('🚀 Starting Jupiter payments-as-swap...');
-  console.log(`  💰 Amount: ${parsedSolAmount} SOL`);
-  console.log(`  🎯 Asset Vault: ${assetVaultPubkey.slice(0, 8)}...${assetVaultPubkey.slice(-8)}`);
-  console.log(`  🪙 Token: ${tokenMint.slice(0, 8)}...${tokenMint.slice(-8)}`);
-  console.log(`  💳 Fee Payer: Platform Wallet`);
-  console.log(`  📊 Mode: ExactIn`);
 
   // Check fee wallet balance before swap
   const { createConnection, parsePrivateKey } = await import('./utils/solana.js');
   const connection = createConnection();
   const feeWallet = parsePrivateKey(feeWalletKey);
   const initialBalance = await connection.getBalance(feeWallet.publicKey);
-  console.log(`  📊 Fee wallet balance before swap: ${initialBalance / 1e9} SOL (${initialBalance} lamports)`);
 
   // Execute the payments-as-swap
   const result = await jupiter.executePaymentAsSwap({
@@ -78,9 +71,6 @@ async function main() {
 
   // Check fee wallet balance after swap
   const finalBalance = await connection.getBalance(feeWallet.publicKey);
-  console.log(`  📊 Fee wallet balance after swap: ${finalBalance / 1e9} SOL (${finalBalance} lamports)`);
-  console.log(`  📊 Balance difference: ${(initialBalance - finalBalance) / 1e9} SOL`);
-  console.log(`  📊 Expected difference: ${parsedSolAmount} SOL`);
 
   return createSuccessResponse({
     operation: 'swap-fee-to-asset',

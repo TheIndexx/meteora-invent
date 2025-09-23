@@ -33,16 +33,10 @@ export class JupiterPaymentsAsSwap {
       const platformWallet = parsePrivateKey(platformWalletKey);
       const destinationWallet = parsePublicKey(assetVaultPubkey);
 
-      console.log('🔄 Starting Jupiter payments-as-swap...');
-      console.log(`  📊 Amount: ${solAmount} SOL`);
-      console.log(`  🎯 Asset Vault: ${assetVaultPubkey.slice(0, 8)}...`);
-      console.log(`  🔗 Token: ${tokenMint.slice(0, 8)}...`);
 
       // Check balances before Jupiter operations
       const initialFeeWalletBalance = await this.connection.getBalance(feeWallet.publicKey);
       const initialPlatformWalletBalance = await this.connection.getBalance(platformWallet.publicKey);
-      console.log(`  📊 Fee wallet balance before Jupiter: ${initialFeeWalletBalance / 1e9} SOL (${initialFeeWalletBalance} lamports)`);
-      console.log(`  📊 Platform wallet balance before Jupiter: ${initialPlatformWalletBalance / 1e9} SOL (${initialPlatformWalletBalance} lamports)`);
 
       // Step 1: Get the Associated Token Account for the asset vault
       const tokenMintPubkey = parsePublicKey(tokenMint);
@@ -54,7 +48,6 @@ export class JupiterPaymentsAsSwap {
         ASSOCIATED_TOKEN_PROGRAM_ID
       );
 
-      console.log(`  🏦 Destination ATA: ${destinationTokenAccount.toString().slice(0, 8)}...`);
 
       // Step 2: Get quote from Jupiter
       const quote = await this.getQuote({
@@ -64,7 +57,6 @@ export class JupiterPaymentsAsSwap {
         slippageBps
       });
 
-      console.log(`  📈 Quote: ${quote.inAmount} lamports → ${quote.outAmount} tokens`);
 
       // Step 3: Get swap transaction with payments-as-swap configuration
       const swapResponse = await this.getSwapTransaction({
@@ -83,15 +75,10 @@ export class JupiterPaymentsAsSwap {
         platformWallet
       });
 
-      console.log(`  ✅ Swap completed: ${signature}`);
 
       // Check balances after Jupiter swap
       const finalFeeWalletBalance = await this.connection.getBalance(feeWallet.publicKey);
       const finalPlatformWalletBalance = await this.connection.getBalance(platformWallet.publicKey);
-      console.log(`  📊 Fee wallet balance after Jupiter: ${finalFeeWalletBalance / 1e9} SOL (${finalFeeWalletBalance} lamports)`);
-      console.log(`  📊 Platform wallet balance after Jupiter: ${finalPlatformWalletBalance / 1e9} SOL (${finalPlatformWalletBalance} lamports)`);
-      console.log(`  📊 Fee wallet difference: ${(initialFeeWalletBalance - finalFeeWalletBalance) / 1e9} SOL`);
-      console.log(`  📊 Platform wallet difference: ${(initialPlatformWalletBalance - finalPlatformWalletBalance) / 1e9} SOL`);
 
       return {
         success: true,
@@ -211,10 +198,9 @@ export class JupiterPaymentsAsSwap {
 
       return signature;
     } catch (error) {
-      // If it's a SendTransactionError, log the detailed transaction logs
+      // Re-throw error with logs if available
       if (error.logs && Array.isArray(error.logs)) {
-        console.error('  ❌ Transaction failed with detailed logs:');
-        error.logs.forEach(log => console.error(`      ${log}`));
+        error.message = `${error.message}\nTransaction logs: ${error.logs.join('\n')}`;
       }
       throw error;
     }
