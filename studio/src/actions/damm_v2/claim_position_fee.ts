@@ -34,7 +34,29 @@ async function main() {
 
   /// --------------------------------------------------------------------------
   if (config) {
-    await claimPositionFee(config, connection, wallet, poolAddress);
+    try {
+      await claimPositionFee(config, connection, wallet, poolAddress);
+    } catch (error: any) {
+      // Check if this is a SendTransactionError and extract logs
+      if (error.logs && Array.isArray(error.logs)) {
+        console.error('\n>>> Transaction failed with logs:');
+        error.logs.forEach((log: string) => console.error(`    ${log}`));
+      } else if (error.transactionLogs && Array.isArray(error.transactionLogs)) {
+        console.error('\n>>> Transaction failed with logs:');
+        error.transactionLogs.forEach((log: string) => console.error(`    ${log}`));
+      }
+
+      // Log the full error details
+      if (error.signature) {
+        console.error(`>>> Failed signature: ${error.signature}`);
+      }
+      if (error.transactionMessage) {
+        console.error(`>>> Error message: ${error.transactionMessage}`);
+      }
+
+      // Re-throw to maintain existing behavior
+      throw error;
+    }
   } else {
     throw new Error('Must provide Dynamic V2 configuration');
   }

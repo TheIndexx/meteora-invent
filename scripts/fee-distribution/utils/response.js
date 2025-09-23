@@ -43,7 +43,7 @@ export async function executeWithErrorHandling(asyncFn) {
     const result = await asyncFn();
     outputResponse(createSuccessResponse(result));
   } catch (error) {
-    console.error('Script error:', error);
+    // Don't output to console.error as it corrupts JSON for test scripts
     outputResponse(createErrorResponse(error, {
       stack: error.stack,
       name: error.name

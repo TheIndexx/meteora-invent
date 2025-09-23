@@ -192,27 +192,36 @@ export class JupiterPaymentsAsSwap {
     // Sign the transaction
     if (transaction instanceof VersionedTransaction) {
       // Handle VersionedTransaction
-      // Fee wallet signs for the swap, platform wallet pays fees
-      transaction.sign([feeWallet]);
+      // Both wallets need to sign: fee wallet for the swap, platform wallet for fees
+      transaction.sign([feeWallet, platformWallet]);
     } else {
       // Handle legacy Transaction
       transaction.feePayer = platformWallet.publicKey;
 
-      // Fee wallet signs the transaction
-      transaction.sign(feeWallet);
+      // Both wallets need to sign: platform wallet as fee payer, fee wallet for the swap
+      transaction.sign(platformWallet, feeWallet);
     }
 
-    // Send the transaction
-    const rawTransaction = transaction.serialize();
-    const signature = await this.connection.sendRawTransaction(rawTransaction, {
-      skipPreflight: false,
-      maxRetries: 3
-    });
+    try {
+      // Send the transaction
+      const rawTransaction = transaction.serialize();
+      const signature = await this.connection.sendRawTransaction(rawTransaction, {
+        skipPreflight: false,
+        maxRetries: 3
+      });
 
-    // Wait for confirmation
-    await this.connection.confirmTransaction(signature, 'confirmed');
+      // Wait for confirmation
+      await this.connection.confirmTransaction(signature, 'confirmed');
 
-    return signature;
+      return signature;
+    } catch (error) {
+      // If it's a SendTransactionError, log the detailed transaction logs
+      if (error.logs && Array.isArray(error.logs)) {
+        console.error('  ❌ Transaction failed with detailed logs:');
+        error.logs.forEach(log => console.error(`      ${log}`));
+      }
+      throw error;
+    }
   }
 
   /**
