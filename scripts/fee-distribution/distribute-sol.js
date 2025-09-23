@@ -1,15 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * SOL Distribution Script
+ * Single SOL Transfer Script
  *
- * This script handles SOL transfers for fee distribution where:
- * - Platform wallet pays transaction fees for all transfers
- * - Fee wallet sends SOL to platform and creator wallets
- * - Simple SOL transfers, no token swaps involved
+ * This script handles a single SOL transfer between two wallets with configurable fee payer.
+ * Designed for fee distribution where platform wallet typically pays transaction fees.
  *
  * Usage:
- * node distribute-sol.js <feeWalletKey> <platformPubkey> <creatorPubkey> <platformAmount> <creatorAmount> <platformWalletKey>
+ * node distribute-sol.js <fromWalletKey> <toWalletPubkey> <amount> <feePayerWalletKey>
  *
  * Returns JSON response for Python integration
  */
@@ -20,99 +18,58 @@ import { executeWithErrorHandling, createSuccessResponse } from './utils/respons
 async function main() {
   const [
     ,, // Skip node and script path
-    feeWalletKey,
-    platformPubkey,
-    creatorPubkey,
-    platformAmount,
-    creatorAmount,
-    platformWalletKey
+    fromWalletKey,
+    toWalletPubkey,
+    amount,
+    feePayerWalletKey
   ] = process.argv;
 
   // Validate all required parameters are provided
-  if (!feeWalletKey || !platformPubkey || !creatorPubkey || !platformAmount || !creatorAmount || !platformWalletKey) {
-    throw new Error('Usage: node distribute-sol.js <feeWalletKey> <platformPubkey> <creatorPubkey> <platformAmount> <creatorAmount> <platformWalletKey>');
+  if (!fromWalletKey || !toWalletPubkey || !amount || !feePayerWalletKey) {
+    throw new Error('Usage: node distribute-sol.js <fromWalletKey> <toWalletPubkey> <amount> <feePayerWalletKey>');
   }
 
-  // Parse and validate amounts
-  const parsedPlatformAmount = parseFloat(platformAmount);
-  const parsedCreatorAmount = parseFloat(creatorAmount);
+  // Parse and validate amount
+  const parsedAmount = parseFloat(amount);
 
-  if (isNaN(parsedPlatformAmount) || parsedPlatformAmount < 0) {
-    throw new Error(`Invalid platform amount: ${platformAmount}. Must be a non-negative number.`);
-  }
-
-  if (isNaN(parsedCreatorAmount) || parsedCreatorAmount < 0) {
-    throw new Error(`Invalid creator amount: ${creatorAmount}. Must be a non-negative number.`);
+  if (isNaN(parsedAmount) || parsedAmount <= 0) {
+    throw new Error(`Invalid amount: ${amount}. Must be a positive number.`);
   }
 
   // Validate key formats
-  const feeWallet = parsePrivateKey(feeWalletKey);
-  const platformPubkeyObj = parsePublicKey(platformPubkey);
-  const creatorPubkeyObj = parsePublicKey(creatorPubkey);
-  const platformWallet = parsePrivateKey(platformWalletKey);
+  const fromWallet = parsePrivateKey(fromWalletKey);
+  const toWalletPubkeyObj = parsePublicKey(toWalletPubkey);
+  const feePayerWallet = parsePrivateKey(feePayerWalletKey);
 
   const connection = createConnection();
-  const results = [];
 
+  // Check initial balance of sender
+  const initialBalance = await connection.getBalance(fromWallet.publicKey);
+  const initialBalanceSol = initialBalance / 1e9;
 
-  // Check initial balance of fee wallet
-  const initialBalance = await connection.getBalance(feeWallet.publicKey);
+  // Perform the transfer
+  const txSignature = await transferSol(
+    connection,
+    fromWallet,
+    toWalletPubkeyObj,
+    parsedAmount,
+    feePayerWalletKey // Custom fee payer
+  );
 
-  // Transfer to platform wallet (if amount > 0)
-  if (parsedPlatformAmount > 0.0001) { // Only transfer meaningful amounts
-
-    const platformTxSignature = await transferSol(
-      connection,
-      feeWallet,
-      platformPubkeyObj,
-      parsedPlatformAmount,
-      platformWalletKey // Platform wallet pays fees
-    );
-
-    results.push({
-      recipient: 'platform',
-      amount: parsedPlatformAmount,
-      pubkey: platformPubkey,
-      txSignature: platformTxSignature
-    });
-
-  } else {
-  }
-
-  // Transfer to creator wallet
-  if (parsedCreatorAmount > 0.0001) { // Only transfer meaningful amounts
-
-    const creatorTxSignature = await transferSol(
-      connection,
-      feeWallet,
-      creatorPubkeyObj,
-      parsedCreatorAmount,
-      platformWalletKey // Platform wallet pays fees
-    );
-
-    results.push({
-      recipient: 'creator',
-      amount: parsedCreatorAmount,
-      pubkey: creatorPubkey,
-      txSignature: creatorTxSignature
-    });
-
-  } else {
-  }
-
-  const totalTransferred = results.reduce((sum, result) => sum + result.amount, 0);
-
-  // Check final balance of fee wallet
-  const finalBalance = await connection.getBalance(feeWallet.publicKey);
+  // Check final balance of sender
+  const finalBalance = await connection.getBalance(fromWallet.publicKey);
+  const finalBalanceSol = finalBalance / 1e9;
 
   return createSuccessResponse({
-    operation: 'distribute-sol',
-    transfers: results,
-    totalTransferred,
-    platformAmount: parsedPlatformAmount,
-    creatorAmount: parsedCreatorAmount,
-    feeStrategy: 'platform-wallet-pays',
-    transferCount: results.length
+    operation: 'single-sol-transfer',
+    fromWallet: fromWallet.publicKey.toString(),
+    toWallet: toWalletPubkey,
+    amount: parsedAmount,
+    txSignature: txSignature,
+    feePayer: feePayerWallet.publicKey.toString(),
+    initialBalance: initialBalanceSol,
+    finalBalance: finalBalanceSol,
+    balanceChange: finalBalanceSol - initialBalanceSol
   });
 }
 
