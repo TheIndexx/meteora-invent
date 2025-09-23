@@ -71,6 +71,7 @@ export class JupiterPaymentsAsSwap {
         quote,
         userPublicKey: feeWallet.publicKey.toString(),
         destinationTokenAccount: destinationTokenAccount.toString(), // ATA for the asset vault
+        payerPublicKey: platformWallet.publicKey.toString(), // Platform wallet pays all fees
         useTokenLedger: false,
         asLegacyTransaction: false
       });
@@ -138,7 +139,7 @@ export class JupiterPaymentsAsSwap {
     quote,
     userPublicKey,
     destinationTokenAccount,
-    feeAccount,
+    payerPublicKey,
     useTokenLedger = false,
     asLegacyTransaction = false
   }) {
@@ -148,9 +149,9 @@ export class JupiterPaymentsAsSwap {
       wrapAndUnwrapSol: true,
       useSharedAccounts: false, // Disable shared accounts for simple AMMs
       destinationTokenAccount, // Direct delivery to asset vault
+      payer: payerPublicKey, // Platform wallet pays all fees and rent
       useTokenLedger,
       asLegacyTransaction
-      // Removed feeAccount and platformFee - platform wallet will pay via transaction feePayer
     };
 
     const response = await fetch(`${JUPITER_API_URL}/swap`, {
@@ -189,16 +190,11 @@ export class JupiterPaymentsAsSwap {
       }
     }
 
-    // Sign the transaction
+    // Sign the transaction with both wallets
+    // Jupiter has already set the platform wallet as payer via the payer parameter
     if (transaction instanceof VersionedTransaction) {
-      // Handle VersionedTransaction
-      // Both wallets need to sign: fee wallet for the swap, platform wallet for fees
-      transaction.sign([feeWallet, platformWallet]);
+      transaction.sign([platformWallet, feeWallet]);
     } else {
-      // Handle legacy Transaction
-      transaction.feePayer = platformWallet.publicKey;
-
-      // Both wallets need to sign: platform wallet as fee payer, fee wallet for the swap
       transaction.sign(platformWallet, feeWallet);
     }
 
