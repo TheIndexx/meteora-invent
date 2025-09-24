@@ -137,10 +137,10 @@ export class JupiterPaymentsAsSwap {
     const requestBody = {
       quoteResponse: quote,
       userPublicKey,
+      payer: payerPublicKey, // Platform wallet pays transaction fees and rent
       wrapAndUnwrapSol: true,
       useSharedAccounts: true, // Enable shared accounts for Jupiter v6
       destinationTokenAccount, // Direct delivery to destination wallet's ATA
-      feeAccount: payerPublicKey, // Platform wallet pays transaction fees
       dynamicComputeUnitLimit: true, // Optimize compute units
       prioritizationFeeLamports: 'auto' // Add priority fee for better landing
     };
