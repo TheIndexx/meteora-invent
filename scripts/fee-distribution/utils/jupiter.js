@@ -38,7 +38,7 @@ export class JupiterPaymentsAsSwap {
       const initialFeeWalletBalance = await this.connection.getBalance(feeWallet.publicKey);
       const initialPlatformWalletBalance = await this.connection.getBalance(platformWallet.publicKey);
 
-      // Step 1: Get the Associated Token Account for the asset vault
+      // Step 1: Get the Associated Token Account for the destination wallet
       const tokenMintPubkey = parsePublicKey(tokenMint);
       const destinationTokenAccount = await getAssociatedTokenAddress(
         tokenMintPubkey,
@@ -47,6 +47,10 @@ export class JupiterPaymentsAsSwap {
         TOKEN_PROGRAM_ID,
         ASSOCIATED_TOKEN_PROGRAM_ID
       );
+
+      console.log(`Destination wallet: ${destinationWallet.toBase58()}`);
+      console.log(`Token mint: ${tokenMintPubkey.toBase58()}`);
+      console.log(`Derived ATA: ${destinationTokenAccount.toBase58()}`);
 
 
       // Step 2: Get quote from Jupiter
@@ -134,12 +138,22 @@ export class JupiterPaymentsAsSwap {
       quoteResponse: quote,
       userPublicKey,
       wrapAndUnwrapSol: true,
-      useSharedAccounts: false, // Disable shared accounts for simple AMMs
-      destinationTokenAccount, // Direct delivery to asset vault
-      payer: payerPublicKey, // Platform wallet pays all fees and rent
-      useTokenLedger,
-      asLegacyTransaction
+      useSharedAccounts: true, // Enable shared accounts for Jupiter v6
+      destinationTokenAccount, // Direct delivery to destination wallet's ATA
+      feeAccount: payerPublicKey, // Platform wallet pays transaction fees
+      dynamicComputeUnitLimit: true, // Optimize compute units
+      prioritizationFeeLamports: 'auto' // Add priority fee for better landing
     };
+
+    console.log('Requesting swap transaction with:', {
+      userPublicKey,
+      destinationTokenAccount,
+      feeAccount: payerPublicKey,
+      inputMint: quote.inputMint,
+      outputMint: quote.outputMint,
+      inAmount: quote.inAmount,
+      outAmount: quote.outAmount
+    });
 
     const response = await fetch(`${JUPITER_API_URL}/swap`, {
       method: 'POST',
