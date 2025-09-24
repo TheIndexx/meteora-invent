@@ -16,8 +16,7 @@ export function createConnection() {
  */
 export function parsePrivateKey(privateKeyString) {
   try {
-    const keyBytes = bs58.decode(privateKeyString);
-    return Keypair.fromSecretKey(keyBytes);
+    return Keypair.fromSecretKey(bs58.decode(privateKeyString));
   } catch (error) {
     throw new Error(`Invalid private key format: ${error.message}`);
   }

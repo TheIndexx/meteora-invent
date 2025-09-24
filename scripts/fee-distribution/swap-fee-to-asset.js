@@ -33,31 +33,52 @@ async function main() {
     throw new Error('Usage: node swap-fee-to-asset.js <feeWalletKey> <assetVaultPubkey> <tokenMint> <solAmount> <platformWalletKey>');
   }
 
-  // Parse and validate SOL amount
-  const parsedSolAmount = parseFloat(solAmount);
-  if (isNaN(parsedSolAmount) || parsedSolAmount <= 0) {
-    throw new Error(`Invalid SOL amount: ${solAmount}. Must be a positive number.`);
+  // Parse and validate SOL amount or use AUTO mode
+  let parsedSolAmount;
+  if (solAmount === 'AUTO') {
+    // Will be calculated automatically from wallet balance
+    parsedSolAmount = null;
+  } else {
+    parsedSolAmount = parseFloat(solAmount);
+    if (isNaN(parsedSolAmount) || parsedSolAmount <= 0) {
+      throw new Error(`Invalid SOL amount: ${solAmount}. Must be a positive number or 'AUTO'.`);
+    }
   }
 
   // Initialize Jupiter payments-as-swap
   const jupiter = new JupiterPaymentsAsSwap();
+
+  // Check fee wallet balance and determine amount to swap
+  const { createConnection, parsePrivateKey, parsePublicKey } = await import('./utils/solana.js');
+  const { PublicKey } = await import('@solana/web3.js');
+  const connection = createConnection();
+  const feeWallet = parsePrivateKey(feeWalletKey);
+  const initialBalance = await connection.getBalance(feeWallet.publicKey);
+
+  // Calculate actual SOL amount to swap
+  let actualSolAmount;
+  if (parsedSolAmount === null) {
+    // AUTO mode: use all available SOL minus rent exemption
+    const RENT_EXEMPTION = 0.00089; // ~890k lamports for rent exemption
+    actualSolAmount = Math.max(0, (initialBalance / 1e9) - RENT_EXEMPTION);
+
+    if (actualSolAmount < 0.001) {
+      throw new Error(`Insufficient balance for swap: ${(initialBalance / 1e9).toFixed(6)} SOL (need > ${RENT_EXEMPTION + 0.001} SOL)`);
+    }
+
+    console.log(`AUTO mode: Using ${actualSolAmount.toFixed(6)} SOL (balance: ${(initialBalance / 1e9).toFixed(6)}, reserved: ${RENT_EXEMPTION})`);
+  } else {
+    actualSolAmount = parsedSolAmount;
+  }
 
   // Validate parameters before execution
   jupiter.validateSwapParams({
     feeWalletKey,
     assetVaultPubkey,
     tokenMint,
-    solAmount: parsedSolAmount,
+    solAmount: actualSolAmount,
     platformWalletKey
   });
-
-
-  // Check fee wallet balance before swap
-  const { createConnection, parsePrivateKey, parsePublicKey } = await import('./utils/solana.js');
-  const { PublicKey } = await import('@solana/web3.js');
-  const connection = createConnection();
-  const feeWallet = parsePrivateKey(feeWalletKey);
-  const initialBalance = await connection.getBalance(feeWallet.publicKey);
 
   // Get token decimals for price calculation
   const tokenMintPubkey = new PublicKey(tokenMint);
@@ -72,7 +93,7 @@ async function main() {
     feeWalletKey,
     assetVaultPubkey,
     tokenMint,
-    solAmount: parsedSolAmount,
+    solAmount: actualSolAmount,
     platformWalletKey,
     slippageBps: 2000, // 20% slippage tolerance for reliability
     maxRetries: 3
@@ -93,14 +114,15 @@ async function main() {
     txSignature: result.signature,
     inputAmount: result.inputAmount,
     outputAmount: result.outputAmount,
-    solAmountSpent: parsedSolAmount,
+    solAmountSpent: actualSolAmount, // Use actual amount swapped
     tokenMint,
     assetVaultPubkey,
     feeStrategy: 'platform-wallet-pays',
     swapMode: 'ExactIn',
     buyPrice: buyPrice, // SOL per token
     tokensReceived: tokensReceived, // Actual tokens received
-    tokenDecimals: tokenDecimals
+    tokenDecimals: tokenDecimals,
+    autoMode: parsedSolAmount === null // Indicate if AUTO mode was used
   });
 }
 
