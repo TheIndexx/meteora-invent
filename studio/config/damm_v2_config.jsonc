@@ -40,7 +40,7 @@
     "creator": "DZB2zcCCZ959R9HivWGoyFReNoL9g8A4Sg4rMECeUbSs", // creator address
     "baseAmount": 1000000000, // base token amount
     "quoteAmount": null, // quote token amount
-    "initPrice": 0.00005,     // ~$50,000 FDV at start (0.00005 * 1e9)
+    "initPrice": 0.0000025,     // ~$50,000 FDV at start (0.0000025 SOL * 1e9)
     "maxPrice": null, // max price (in terms of quote/base price)
     "poolFees": {
       "maxBaseFeeBps": 500, // max base fee (in basis points)
