@@ -1,0 +1,18 @@
+{
+  "name": "Test Token",
+  "symbol": "TEST",
+  "mint": "D1kghHwJjPWpXrUzHEaJMFkZB17gymVWQAK3VqxrKuuz",
+  "decimals": 9,
+  "totalSupply": 1000000000000000000,
+  "displaySupply": 1000000000,
+  "tokenAccount": "J3eWifL5FDMd9VbKhi64W7EazdEGRavsC5eajmGGv8UZ",
+  "createSignature": "BzJNRuRTuFpRjPxW7czZgzt4icAGB1CMmPTZ4YVPt5MmH2Kmnpi5SAgcoXa8AabknMjt6aGdFJ7SX2rPT4ECiBY",
+  "mintSignature": "4veitYPU1TCCRnsiupDMkbWPE6QDL1s1HfLMkRoDnDQmjnvoSaibUrCmXYjDYMxUtoJGsnGFzzC32c1gM9gKWDde",
+  "metadataAddress": "DCLFGwjuEdxbF38JbiRZrSCJzdTKUcan4HfenqBAeSGF",
+  "hasMetadata": true,
+  "description": "This is a test token created for demonstration purposes",
+  "imageUri": "https://xcnhdbpaaxcsesrgnksw.supabase.co/storage/v1/object/public/band-images/tokens/tete_0b8eaa63.jpg",
+  "network": "mainnet",
+  "createdAt": "2025-09-26T10:00:47.892Z",
+  "explorerUrl": "https://solscan.io/token/D1kghHwJjPWpXrUzHEaJMFkZB17gymVWQAK3VqxrKuuz"
+}
