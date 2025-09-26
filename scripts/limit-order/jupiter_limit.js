@@ -260,6 +260,9 @@ class JupiterLimitOrderCLI {
       console.log(`🔍 Input token decimals: ${inTokenDecimals}`);
       console.log(`🔍 Output token decimals: ${outTokenDecimals}`);
       
+      // Handle "ALL" amount parameter to use all available tokens
+      let finalInAmount = inAmount;
+      
       // Only approve token spending for SPL tokens, not native SOL
       if (inToken !== SOL_MINT) {
         console.log('🔄 Checking token balance and approving token spending...');
@@ -268,33 +271,48 @@ class JupiterLimitOrderCLI {
         const tokenAccount = await this.getOrCreateTokenAccount(inToken, this.wallet.publicKey);
         const balance = await this.connection.getTokenAccountBalance(tokenAccount);
         console.log(`🔍 Token balance: ${balance.value.amount} (${balance.value.uiAmount})`);
-        console.log(`🔍 Required amount: ${inAmount}`);
         
-        if (BigInt(balance.value.amount) < BigInt(inAmount)) {
-          console.error(`❌ Insufficient token balance. Have: ${balance.value.amount}, Need: ${inAmount}`);
+        // Handle "ALL" parameter - use all available tokens
+        if (inAmount === "ALL" || inAmount === "all") {
+          finalInAmount = balance.value.amount;
+          console.log(`🔄 Using ALL available tokens: ${finalInAmount}`);
+        } else {
+          finalInAmount = inAmount;
+          console.log(`🔍 Required amount: ${finalInAmount}`);
+          
+          if (BigInt(balance.value.amount) < BigInt(finalInAmount)) {
+            console.error(`❌ Insufficient token balance. Have: ${balance.value.amount}, Need: ${finalInAmount}`);
+            return null;
+          }
+        }
+        
+        // Ensure we have tokens to trade
+        if (BigInt(finalInAmount) <= 0) {
+          console.error(`❌ No tokens available to trade. Balance: ${balance.value.amount}`);
           return null;
         }
         
-        const approvalSuccess = await this.approveTokenSpending(inToken, inAmount);
+        const approvalSuccess = await this.approveTokenSpending(inToken, finalInAmount);
         if (!approvalSuccess) {
           return null;
         }
       } else {
         console.log('ℹ️ Using native SOL - no token approval needed');
+        finalInAmount = inAmount;
       }
 
       // Calculate the correct taking amount based on price and decimals
       // targetPrice is the price per token in terms of output token
       // For example: if selling TOKEN for SOL, targetPrice is SOL per TOKEN
-      const inAmountBigInt = BigInt(inAmount);
+      const inAmountBigInt = BigInt(finalInAmount);
       const targetPriceBigInt = BigInt(Math.floor(parseFloat(targetPrice) * Math.pow(10, outTokenDecimals)));
       const takingAmount = (inAmountBigInt * targetPriceBigInt / BigInt(Math.pow(10, inTokenDecimals))).toString();
       
       console.log(`🔍 Price calculation:`);
-      console.log(`   Input amount: ${inAmount} (raw units)`);
+      console.log(`   Input amount: ${finalInAmount} (raw units)`);
       console.log(`   Target price: ${targetPrice} ${outToken === SOL_MINT ? 'SOL' : 'tokens'} per input token`);
       console.log(`   Calculated taking amount: ${takingAmount} (raw units)`);
-      console.log(`   Effective price: ${parseFloat(takingAmount) / parseFloat(inAmount) * Math.pow(10, inTokenDecimals - outTokenDecimals)}`);
+      console.log(`   Effective price: ${parseFloat(takingAmount) / parseFloat(finalInAmount) * Math.pow(10, inTokenDecimals - outTokenDecimals)}`);
 
       // Create trigger order using the new Jupiter v1 API format
       const feePayer = this.feePayerWallet || this.wallet;
@@ -304,7 +322,7 @@ class JupiterLimitOrderCLI {
         maker: this.wallet.publicKey.toString(),
         payer: feePayer.publicKey.toString(),
         params: {
-          makingAmount: inAmount,
+          makingAmount: finalInAmount,
           takingAmount: takingAmount,
           slippageBps: slippageBps.toString(),
           expiredAt: Math.floor((Date.now() + (24 * 60 * 60 * 1000)) / 1000).toString() // 24 hours from now in unix seconds
