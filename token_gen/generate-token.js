@@ -13,6 +13,7 @@ const {
   Keypair,
   Transaction,
   SystemProgram,
+  PublicKey,
 } = require('@solana/web3.js');
 const {
   getOrCreateAssociatedTokenAccount,
@@ -20,10 +21,14 @@ const {
   TOKEN_PROGRAM_ID,
   createInitializeMintInstruction,
 } = require('@solana/spl-token');
+const {
+  createCreateMetadataAccountV3Instruction,
+  PROGRAM_ID: TOKEN_METADATA_PROGRAM_ID,
+} = require('@metaplex-foundation/mpl-token-metadata');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const bs58 = require('bs58');
+const bs58 = require('bs58').default;
 
 class SimpleTokenLauncher {
   constructor(network = 'devnet', walletPath = null, privateKey = null, rpcUrl = null) {
@@ -109,8 +114,11 @@ class SimpleTokenLauncher {
       const balance = await this.connection.getBalance(this.payer.publicKey);
       console.log(`💰 Wallet Balance: ${(balance / 1e9).toFixed(4)} SOL`);
       
-      if (balance < 0.01 * 1e9) { // Less than 0.01 SOL
-        throw new Error('Insufficient SOL balance. Need at least 0.01 SOL for token creation.');
+      const requiredBalance = tokenConfig.createMetadata ? 0.02 * 1e9 : 0.01 * 1e9;
+      const requiredSolText = tokenConfig.createMetadata ? '0.02 SOL for token creation with metadata' : '0.01 SOL for token creation';
+      
+      if (balance < requiredBalance) {
+        throw new Error(`Insufficient SOL balance. Need at least ${requiredSolText}.`);
       }
 
       const mintKeypair = Keypair.generate();
@@ -142,11 +150,26 @@ class SimpleTokenLauncher {
         TOKEN_PROGRAM_ID
       );
       
+      // Create metadata if specified
+      let metadataInstruction = null;
+      let metadataAddress = null;
+      if (tokenConfig.createMetadata) {
+        const metadataResult = await this.createMetadataInstruction(mint, tokenConfig);
+        metadataInstruction = metadataResult.instruction;
+        metadataAddress = metadataResult.metadataAddress;
+        console.log(`   📋 Metadata address: ${metadataAddress.toString()}`);
+      }
+      
       // Create and send transaction
       const transaction = new Transaction().add(
         createAccountInstruction,
         initializeMintInstruction
       );
+      
+      // Add metadata instruction if created
+      if (metadataInstruction) {
+        transaction.add(metadataInstruction);
+      }
       
       const signature = await this.connection.sendTransaction(
         transaction,
@@ -157,6 +180,9 @@ class SimpleTokenLauncher {
       await this.connection.confirmTransaction(signature, 'confirmed');
       
       console.log(`   ✅ Token created successfully!`);
+      if (metadataAddress) {
+        console.log(`   ✅ Metadata created successfully!`);
+      }
       console.log(`   📝 Creation signature: ${signature}`);
       
       // Mint initial supply if specified
@@ -203,6 +229,10 @@ class SimpleTokenLauncher {
         tokenAccount: tokenAccount ? tokenAccount.address.toString() : null,
         createSignature: signature,
         mintSignature: mintSignature,
+        metadataAddress: metadataAddress ? metadataAddress.toString() : null,
+        hasMetadata: !!tokenConfig.createMetadata,
+        description: tokenConfig.description || null,
+        imageUri: tokenConfig.imageUri || null,
         network: this.network,
         createdAt: new Date().toISOString(),
         explorerUrl: this.network === 'mainnet' 
@@ -214,6 +244,57 @@ class SimpleTokenLauncher {
       
     } catch (error) {
       console.error(`❌ Failed to create token:`, error.message);
+      throw error;
+    }
+  }
+
+  async createMetadataInstruction(mint, tokenConfig) {
+    try {
+      // Derive the metadata PDA
+      const [metadataAddress] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from('metadata'),
+          TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+          mint.toBuffer(),
+        ],
+        TOKEN_METADATA_PROGRAM_ID
+      );
+
+      // Prepare metadata
+      const tokenMetadata = {
+        name: tokenConfig.name,
+        symbol: tokenConfig.symbol,
+        uri: tokenConfig.imageUri || '', // Can be empty or point to JSON metadata
+        sellerFeeBasisPoints: 0, // No royalties
+        creators: null, // No creators array
+        collection: null, // No collection
+        uses: null, // No uses
+      };
+
+      // Create the instruction
+      const instruction = createCreateMetadataAccountV3Instruction(
+        {
+          metadata: metadataAddress,
+          mint: mint,
+          mintAuthority: this.payer.publicKey,
+          payer: this.payer.publicKey,
+          updateAuthority: this.payer.publicKey,
+        },
+        {
+          createMetadataAccountArgsV3: {
+            data: tokenMetadata,
+            isMutable: true,
+            collectionDetails: null,
+          },
+        }
+      );
+
+      return {
+        instruction,
+        metadataAddress,
+      };
+    } catch (error) {
+      console.error('Failed to create metadata instruction:', error);
       throw error;
     }
   }
@@ -245,7 +326,10 @@ function parseArguments() {
     walletPath: null,
     privateKey: null,
     rpcUrl: null,
-    output: null
+    output: null,
+    createMetadata: false,
+    description: null,
+    imageUri: null
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -288,6 +372,19 @@ function parseArguments() {
         config.output = args[i + 1];
         i++;
         break;
+      case '--metadata':
+        config.createMetadata = true;
+        break;
+      case '--description':
+        config.description = args[i + 1];
+        config.createMetadata = true; // Auto-enable metadata if description provided
+        i++;
+        break;
+      case '--image':
+        config.imageUri = args[i + 1];
+        config.createMetadata = true; // Auto-enable metadata if image provided
+        i++;
+        break;
       case '--help':
         showHelp();
         process.exit(0);
@@ -323,6 +420,57 @@ function validateConfig(config) {
   return errors;
 }
 
+function showHelp() {
+  console.log(`
+🚀 Simple SPL Token Launcher
+
+USAGE:
+  node generate-token.js --name "Token Name" --symbol "SYMBOL" [options]
+
+REQUIRED ARGUMENTS:
+  --name <string>       Token name (e.g., "My Token")
+  --symbol <string>     Token symbol (e.g., "MTK")
+
+OPTIONAL ARGUMENTS:
+  --decimals <number>   Token decimals (default: 9)
+  --supply <number>     Initial token supply in display units (default: 1000000000)
+  --network <string>    Network: devnet or mainnet (default: devnet)
+  --wallet <path>       Path to wallet keypair file
+  --private-key <key>   Private key (base58 or array format)
+  --rpc-url <url>       Custom RPC URL
+  --output <path>       Output file path for token details
+
+METADATA ARGUMENTS:
+  --metadata            Enable metadata creation (automatically enabled with --description or --image)
+  --description <text>  Token description for metadata
+  --image <uri>         Image URI for token logo (IPFS, Arweave, or HTTP URL)
+
+EXAMPLES:
+  # Basic token without metadata
+  node generate-token.js --name "My Token" --symbol "MTK"
+
+  # Token with metadata
+  node generate-token.js --name "My Token" --symbol "MTK" --metadata --description "A sample token"
+
+  # Token with complete metadata
+  node generate-token.js --name "My Token" --symbol "MTK" \\
+    --description "A sample token for testing" \\
+    --image "https://example.com/logo.png"
+
+  # Production token on mainnet
+  node generate-token.js --name "Production Token" --symbol "PROD" \\
+    --network mainnet --supply 1000000 \\
+    --description "Production ready token" \\
+    --image "https://example.com/logo.png"
+
+NOTES:
+  • Metadata makes tokens discoverable by wallets and dApps
+  • Images should be publicly accessible URLs (IPFS recommended)
+  • Mainnet requires real SOL for transaction fees
+  • Minimum balance: 0.02 SOL (for metadata creation)
+`);
+}
+
 async function main() {
   try {
     console.log('🚀 Simple SPL Token Launcher\n');
@@ -344,6 +492,13 @@ async function main() {
     console.log(`   Decimals: ${config.decimals}`);
     console.log(`   Total Supply: ${(config.totalSupply / Math.pow(10, config.decimals)).toLocaleString()} ${config.symbol}`);
     console.log(`   Network: ${config.network}`);
+    if (config.createMetadata) {
+      console.log(`   📋 Metadata: Enabled`);
+      if (config.description) console.log(`   📝 Description: ${config.description}`);
+      if (config.imageUri) console.log(`   🖼️  Image URI: ${config.imageUri}`);
+    } else {
+      console.log(`   📋 Metadata: Disabled`);
+    }
 
     // Create token
     const launcher = new SimpleTokenLauncher(config.network, config.walletPath, config.privateKey, config.rpcUrl);
@@ -365,7 +520,12 @@ async function main() {
     if (config.network === 'devnet') {
       console.log('\n💡 Next Steps:');
       console.log('• Token is ready for use on devnet');
-      console.log('• You can create pools, add metadata, or distribute tokens');
+      if (result.hasMetadata) {
+        console.log('• Metadata is on-chain and discoverable by wallets and dApps');
+      } else {
+        console.log('• You can add metadata later with --metadata flag');
+      }
+      console.log('• You can create pools or distribute tokens');
       console.log('• For mainnet, re-run with --network mainnet');
     }
 
