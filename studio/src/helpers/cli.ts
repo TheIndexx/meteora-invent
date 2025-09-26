@@ -62,6 +62,12 @@ export function parseCliArguments(): CliArguments {
       'creator': {
         type: 'string',
       },
+      'max-base-fee-bps': {
+        type: 'string',
+      },
+      'min-base-fee-bps': {
+        type: 'string',
+      },
     },
     strict: false,
     allowPositionals: true,
@@ -73,6 +79,8 @@ export function parseCliArguments(): CliArguments {
     walletPk: typeof values['wallet-pk'] === 'string' ? values['wallet-pk'] : undefined,
     poolAddress: typeof values['pool-address'] === 'string' ? values['pool-address'] : undefined,
     creator: typeof values['creator'] === 'string' ? values['creator'] : undefined,
+    maxBaseFeeBps: typeof values['max-base-fee-bps'] === 'string' ? values['max-base-fee-bps'] : undefined,
+    minBaseFeeBps: typeof values['min-base-fee-bps'] === 'string' ? values['min-base-fee-bps'] : undefined,
   };
 }
 
@@ -110,6 +118,27 @@ export async function parseConfigFromCli(): Promise<MeteoraConfig> {
   if (cliArguments.creator && 'dammV2Config' in config && config.dammV2Config) {
     console.log(`> Overriding creator from CLI: ${cliArguments.creator}`);
     config.dammV2Config.creator = cliArguments.creator;
+  }
+
+  // Override fee parameters if provided via CLI (for DAMM V2 configs)
+  if ('dammV2Config' in config && config.dammV2Config) {
+    if (cliArguments.maxBaseFeeBps) {
+      const maxBaseFeeBps = parseInt(cliArguments.maxBaseFeeBps);
+      if (isNaN(maxBaseFeeBps)) {
+        throw new Error(`Invalid maxBaseFeeBps value: ${cliArguments.maxBaseFeeBps}`);
+      }
+      console.log(`> Overriding maxBaseFeeBps from CLI: ${maxBaseFeeBps}`);
+      config.dammV2Config.poolFees.maxBaseFeeBps = maxBaseFeeBps;
+    }
+    
+    if (cliArguments.minBaseFeeBps) {
+      const minBaseFeeBps = parseInt(cliArguments.minBaseFeeBps);
+      if (isNaN(minBaseFeeBps)) {
+        throw new Error(`Invalid minBaseFeeBps value: ${cliArguments.minBaseFeeBps}`);
+      }
+      console.log(`> Overriding minBaseFeeBps from CLI: ${minBaseFeeBps}`);
+      config.dammV2Config.poolFees.minBaseFeeBps = minBaseFeeBps;
+    }
   }
 
   validateConfig(config);

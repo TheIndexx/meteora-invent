@@ -7,6 +7,8 @@ export interface CliArguments {
   walletPk?: string | undefined;
   poolAddress?: string | undefined;
   creator?: string | undefined;
+  maxBaseFeeBps?: string | undefined;
+  minBaseFeeBps?: string | undefined;
 }
 
 /* COMMON */

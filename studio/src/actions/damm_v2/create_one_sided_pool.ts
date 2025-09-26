@@ -45,6 +45,8 @@ async function main() {
   console.log(`- Using quote token mint ${quoteMint.toString()}`);
   if (config.dammV2Config) {
     console.log(`- Using creator ${config.dammV2Config.creator}`);
+    console.log(`- Using maxBaseFeeBps ${config.dammV2Config.poolFees.maxBaseFeeBps}`);
+    console.log(`- Using minBaseFeeBps ${config.dammV2Config.poolFees.minBaseFeeBps}`);
   }
 
   /// --------------------------------------------------------------------------
