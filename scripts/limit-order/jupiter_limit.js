@@ -14,6 +14,7 @@ import {
   createApproveInstruction,
   getAssociatedTokenAddress,
   TOKEN_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID
 } from '@solana/spl-token';
 import { Command } from 'commander';
@@ -54,6 +55,48 @@ import bs58 from 'bs58';
 const SOL_MINT = 'So11111111111111111111111111111111111111112';
 const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
 const JUPITER_PROGRAM_ID = new PublicKey('JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4');
+
+/**
+ * Detect which token program a mint uses
+ */
+async function detectTokenProgram(connection, mintAddress) {
+  try {
+    const mintInfo = await connection.getAccountInfo(mintAddress);
+    
+    if (!mintInfo) {
+      throw new Error(`Mint account not found: ${mintAddress.toBase58()}`);
+    }
+    
+    const owner = mintInfo.owner.toBase58();
+    
+    if (owner === TOKEN_2022_PROGRAM_ID.toBase58()) {
+      console.log(`🔍 Detected Token 2022 Program for mint: ${mintAddress.toBase58()}`);
+      return {
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
+        ataProgram: ASSOCIATED_TOKEN_PROGRAM_ID // ATA program is the same for both
+      };
+    } else if (owner === TOKEN_PROGRAM_ID.toBase58()) {
+      console.log(`🔍 Detected Standard Token Program for mint: ${mintAddress.toBase58()}`);
+      return {
+        tokenProgram: TOKEN_PROGRAM_ID,
+        ataProgram: ASSOCIATED_TOKEN_PROGRAM_ID
+      };
+    } else {
+      console.log(`⚠️ Unknown token program owner: ${owner}, defaulting to standard Token Program`);
+      return {
+        tokenProgram: TOKEN_PROGRAM_ID,
+        ataProgram: ASSOCIATED_TOKEN_PROGRAM_ID
+      };
+    }
+  } catch (error) {
+    console.error(`❌ Error detecting token program: ${error.message}`);
+    // Default to standard Token Program on error
+    return {
+      tokenProgram: TOKEN_PROGRAM_ID,
+      ataProgram: ASSOCIATED_TOKEN_PROGRAM_ID
+    };
+  }
+}
 
 class JupiterLimitOrderCLI {
   constructor() {
@@ -121,9 +164,18 @@ class JupiterLimitOrderCLI {
   }
 
   // Get or create associated token account
-  async getOrCreateTokenAccount(mint, owner) {
+  async getOrCreateTokenAccount(mint, owner, tokenProgram = TOKEN_PROGRAM_ID, ataProgram = ASSOCIATED_TOKEN_PROGRAM_ID) {
     const mintPubkey = new PublicKey(mint);
-    const tokenAccount = await getAssociatedTokenAddress(mintPubkey, owner);
+    
+    // Use the correct ATA calculation based on token program
+    // For both Token Program and Token 2022, use the same ATA calculation method
+    const tokenAccount = await getAssociatedTokenAddress(
+      mintPubkey, 
+      owner, 
+      true, // allowOwnerOffCurve - this is important for Token 2022
+      tokenProgram, // Use the detected token program
+      ataProgram
+    );
     
     console.log(`🔍 Looking for token account: ${tokenAccount.toString()}`);
     console.log(`🔍 For mint: ${mint}`);
@@ -147,7 +199,9 @@ class JupiterLimitOrderCLI {
         feePayer.publicKey, // payer (fee payer)
         tokenAccount, // token account
         owner, // owner
-        mintPubkey // mint
+        mintPubkey, // mint
+        tokenProgram,
+        ataProgram
       )
     );
     
@@ -163,14 +217,14 @@ class JupiterLimitOrderCLI {
   }
 
   // Approve Jupiter to spend tokens
-  async approveTokenSpending(mint, amount) {
+  async approveTokenSpending(mint, amount, tokenProgram = TOKEN_PROGRAM_ID, ataProgram = ASSOCIATED_TOKEN_PROGRAM_ID) {
     if (!this.wallet) {
       console.error('❌ Wallet not initialized');
       return false;
     }
 
     try {
-      const tokenAccount = await this.getOrCreateTokenAccount(mint, this.wallet.publicKey);
+      const tokenAccount = await this.getOrCreateTokenAccount(mint, this.wallet.publicKey, tokenProgram, ataProgram);
       
       // Verify token account exists and get its info
       const tokenAccountInfo = await this.connection.getAccountInfo(tokenAccount);
@@ -187,7 +241,9 @@ class JupiterLimitOrderCLI {
         tokenAccount,
         JUPITER_PROGRAM_ID,
         this.wallet.publicKey,
-        BigInt(amount)
+        BigInt(amount),
+        [], // multiSigners
+        tokenProgram
       );
 
       const feePayer = this.feePayerWallet || this.wallet;
@@ -252,6 +308,11 @@ class JupiterLimitOrderCLI {
     console.log('🔄 Creating limit order...');
     
     try {
+      // Detect token program for input token
+      console.log('🔍 Detecting token program...');
+      const { tokenProgram, ataProgram } = await detectTokenProgram(this.connection, new PublicKey(inToken));
+      console.log(`🔍 Using token program: ${tokenProgram.toBase58()}`);
+      
       // Get token decimals for proper price calculation
       console.log('🔍 Fetching token decimals...');
       const inTokenDecimals = await this.getTokenDecimals(inToken);
@@ -268,7 +329,7 @@ class JupiterLimitOrderCLI {
         console.log('🔄 Checking token balance and approving token spending...');
         
         // Check token balance first
-        const tokenAccount = await this.getOrCreateTokenAccount(inToken, this.wallet.publicKey);
+        const tokenAccount = await this.getOrCreateTokenAccount(inToken, this.wallet.publicKey, tokenProgram, ataProgram);
         const balance = await this.connection.getTokenAccountBalance(tokenAccount);
         console.log(`🔍 Token balance: ${balance.value.amount} (${balance.value.uiAmount})`);
         
@@ -292,7 +353,7 @@ class JupiterLimitOrderCLI {
           return null;
         }
         
-        const approvalSuccess = await this.approveTokenSpending(inToken, finalInAmount);
+        const approvalSuccess = await this.approveTokenSpending(inToken, finalInAmount, tokenProgram, ataProgram);
         if (!approvalSuccess) {
           return null;
         }
