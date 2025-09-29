@@ -16,9 +16,12 @@ import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import {
   getAssociatedTokenAddress,
   createTransferInstruction,
+  createTransferCheckedInstruction,
   createAssociatedTokenAccountInstruction,
   TOKEN_PROGRAM_ID,
-  ASSOCIATED_TOKEN_PROGRAM_ID
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID,
+  ASSOCIATED_TOKEN_PROGRAM_ID as ATA_PROGRAM_ID
 } from '@solana/spl-token';
 import { parsePrivateKey, parsePublicKey } from './utils/solana.js';
 import { JupiterSimpleSwap } from './utils/jupiter-simple.js';
@@ -30,6 +33,48 @@ const connection = new Connection(RPC_URL, 'confirmed');
 
 // SOL mint address (native SOL)
 const SOL_MINT = 'So11111111111111111111111111111111111111112';
+
+/**
+ * Detect which token program a mint uses
+ */
+async function detectTokenProgram(connection, mintAddress) {
+  try {
+    const mintInfo = await connection.getAccountInfo(mintAddress);
+    
+    if (!mintInfo) {
+      throw new Error(`Mint account not found: ${mintAddress.toBase58()}`);
+    }
+    
+    const owner = mintInfo.owner.toBase58();
+    
+    if (owner === TOKEN_2022_PROGRAM_ID.toBase58()) {
+      console.log(`🔍 Detected Token 2022 Program for mint: ${mintAddress.toBase58()}`);
+      return {
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
+        ataProgram: ATA_PROGRAM_ID // ATA program is the same for both
+      };
+    } else if (owner === TOKEN_PROGRAM_ID.toBase58()) {
+      console.log(`🔍 Detected Standard Token Program for mint: ${mintAddress.toBase58()}`);
+      return {
+        tokenProgram: TOKEN_PROGRAM_ID,
+        ataProgram: ASSOCIATED_TOKEN_PROGRAM_ID
+      };
+    } else {
+      console.log(`⚠️ Unknown token program owner: ${owner}, defaulting to standard Token Program`);
+      return {
+        tokenProgram: TOKEN_PROGRAM_ID,
+        ataProgram: ASSOCIATED_TOKEN_PROGRAM_ID
+      };
+    }
+  } catch (error) {
+    console.error(`❌ Error detecting token program: ${error.message}`);
+    // Default to standard Token Program on error
+    return {
+      tokenProgram: TOKEN_PROGRAM_ID,
+      ataProgram: ASSOCIATED_TOKEN_PROGRAM_ID
+    };
+  }
+}
 
 async function main() {
   const args = process.argv.slice(2);
@@ -61,7 +106,7 @@ async function main() {
   console.log(`   Platform Wallet: ${(initialPlatformBalance / 1e9).toFixed(6)} SOL`);
 
   // Calculate SOL amount to swap (all available minus rent exemption)
-  const RENT_EXEMPTION = 0.0015; // Increased to 1.5k lamports for better safety margin
+  const RENT_EXEMPTION = 0.0025; // Increased to 1.5k lamports for better safety margin
   const actualSolAmount = Math.max(0, (initialAssetVaultBalance / 1e9) - RENT_EXEMPTION);
 
   console.log(`\n📊 Balance Analysis:`);
@@ -75,7 +120,7 @@ async function main() {
 
   console.log(`\n🎯 Proceeding with swap of ${actualSolAmount.toFixed(6)} SOL`);
 
-  // Get token decimals for calculations
+  // Get token decimals and detect token program
   console.log(`\n🔍 Token Information:`);
   console.log(`   Token Mint: ${tokenMintPubkey.toBase58()}`);
   
@@ -87,6 +132,11 @@ async function main() {
   } else {
     console.log(`   ⚠️  Could not fetch token info, using default decimals: ${tokenDecimals}`);
   }
+
+  // Detect token program
+  const { tokenProgram, ataProgram } = await detectTokenProgram(connection, tokenMintPubkey);
+  console.log(`   Token Program: ${tokenProgram.toBase58()}`);
+  console.log(`   ATA Program: ${ataProgram.toBase58()}`);
 
   // STEP 1: Simple Jupiter Swap (SOL → Tokens in Asset Vault)
   console.log('\n📈 Step 1: Swapping SOL to tokens (simple Jupiter swap)');
@@ -135,7 +185,9 @@ async function main() {
     toWallet: holdingWallet,
     tokenMint: tokenMintPubkey,
     platformWallet,
-    tokenDecimals
+    tokenDecimals,
+    tokenProgram,
+    ataProgram
   });
 
   if (!tokenTransferResult.success) {
@@ -190,28 +242,28 @@ async function main() {
 /**
  * Transfer ALL tokens from asset vault to holding wallet
  */
-async function transferAllTokens({ fromWallet, toWallet, tokenMint, platformWallet, tokenDecimals }) {
+async function transferAllTokens({ fromWallet, toWallet, tokenMint, platformWallet, tokenDecimals, tokenProgram, ataProgram }) {
   try {
     console.log(`\n🔍 Transfer Details:`);
     console.log(`   From Wallet: ${fromWallet.publicKey.toBase58()}`);
     console.log(`   To Wallet: ${toWallet.toBase58()}`);
     console.log(`   Token Mint: ${tokenMint.toBase58()}`);
 
-    // Get ATAs for both wallets
+    // Get ATAs for both wallets using detected token program
     const fromATA = await getAssociatedTokenAddress(
       tokenMint,
       fromWallet.publicKey,
       true, // Allow owner to be off curve
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
+      tokenProgram,
+      ataProgram
     );
 
     const toATA = await getAssociatedTokenAddress(
       tokenMint,
       toWallet,
       true, // Allow owner to be off curve
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
+      tokenProgram,
+      ataProgram
     );
 
     console.log(`\n🏦 Token Account Addresses:`);
@@ -257,8 +309,8 @@ async function transferAllTokens({ fromWallet, toWallet, tokenMint, platformWall
           toATA, // ata
           toWallet, // owner
           tokenMint, // mint
-          TOKEN_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
+          tokenProgram,
+          ataProgram
         )
       );
     } else {
@@ -268,17 +320,35 @@ async function transferAllTokens({ fromWallet, toWallet, tokenMint, platformWall
     // Add transfer instruction for ALL tokens
     console.log(`\n💸 Adding transfer instruction...`);
     console.log(`   Transferring: ${uiAmount} tokens (${tokenAmount} raw)`);
+    console.log(`   Using ${tokenProgram === TOKEN_2022_PROGRAM_ID ? 'TransferChecked' : 'Transfer'} instruction`);
     
-    transaction.add(
-      createTransferInstruction(
-        fromATA, // source
-        toATA, // destination
-        fromWallet.publicKey, // owner of source account
-        BigInt(tokenAmount), // transfer ALL tokens
-        [], // multiSigners (empty for single signer)
-        TOKEN_PROGRAM_ID
-      )
-    );
+    if (tokenProgram === TOKEN_2022_PROGRAM_ID) {
+      // Token 2022 requires transferChecked instruction
+      transaction.add(
+        createTransferCheckedInstruction(
+          fromATA, // source
+          tokenMint, // mint (required for transferChecked)
+          toATA, // destination
+          fromWallet.publicKey, // owner of source account
+          BigInt(tokenAmount), // transfer ALL tokens
+          tokenDecimals, // decimals (required for transferChecked)
+          [], // multiSigners (empty for single signer)
+          tokenProgram
+        )
+      );
+    } else {
+      // Standard Token Program uses regular transfer instruction
+      transaction.add(
+        createTransferInstruction(
+          fromATA, // source
+          toATA, // destination
+          fromWallet.publicKey, // owner of source account
+          BigInt(tokenAmount), // transfer ALL tokens
+          [], // multiSigners (empty for single signer)
+          tokenProgram
+        )
+      );
+    }
 
     // Set recent blockhash and fee payer
     console.log(`\n🔧 Setting up transaction...`);
