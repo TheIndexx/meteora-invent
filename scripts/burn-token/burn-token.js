@@ -118,7 +118,7 @@ async function burnTokens(walletPrivateKey, tokenMint, burnAmount) {
     
     // Calculate balances
     const currentBalance = Number(accountInfo.balance) / Math.pow(10, mintInfo.decimals);
-    const burnAmountRaw = BigInt(burnAmount * Math.pow(10, mintInfo.decimals));
+    const burnAmountRaw = BigInt(Math.floor(burnAmount * Math.pow(10, mintInfo.decimals)));
     
     console.log(`\n💰 Current token balance: ${currentBalance}`);
     console.log(`Amount to burn (raw units): ${burnAmountRaw.toString()}`);
