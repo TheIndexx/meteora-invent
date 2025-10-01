@@ -113,21 +113,39 @@ export class JupiterSimpleSwap {
       swapMode: 'ExactIn'
     });
 
-    const response = await fetch(`${JUPITER_API_URL}/quote?${params}`);
+    const url = `${JUPITER_API_URL}/quote?${params}`;
+    console.log(`Fetching Jupiter quote from: ${url}`);
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Jupiter quote failed: ${error}`);
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Meteora-Invent/1.0'
+        },
+        timeout: 10000 // 10 second timeout
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        console.error(`Jupiter API error: ${response.status} ${response.statusText} - ${error}`);
+        throw new Error(`Jupiter quote failed: ${response.status} ${response.statusText} - ${error}`);
+      }
+
+      const quote = await response.json();
+      console.log(`Jupiter quote received: inAmount=${quote.inAmount}, outAmount=${quote.outAmount}`);
+
+      // Validate quote response
+      if (!quote.inAmount || !quote.outAmount) {
+        console.error('Invalid quote response:', quote);
+        throw new Error('Invalid quote response from Jupiter');
+      }
+
+      return quote;
+    } catch (error) {
+      console.error(`Jupiter API fetch failed: ${error.message}`);
+      throw new Error(`Jupiter API fetch failed: ${error.message}`);
     }
-
-    const quote = await response.json();
-
-    // Validate quote response
-    if (!quote.inAmount || !quote.outAmount) {
-      throw new Error('Invalid quote response from Jupiter');
-    }
-
-    return quote;
   }
 
   /**
@@ -150,20 +168,34 @@ export class JupiterSimpleSwap {
       asLegacyTransaction
     };
 
-    const response = await fetch(`${JUPITER_API_URL}/swap`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    });
+    const url = `${JUPITER_API_URL}/swap`;
+    console.log(`Fetching Jupiter swap transaction from: ${url}`);
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Jupiter swap transaction failed: ${error}`);
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'User-Agent': 'Meteora-Invent/1.0'
+        },
+        body: JSON.stringify(requestBody),
+        timeout: 15000 // 15 second timeout
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        console.error(`Jupiter swap API error: ${response.status} ${response.statusText} - ${error}`);
+        throw new Error(`Jupiter swap transaction failed: ${response.status} ${response.statusText} - ${error}`);
+      }
+
+      const result = await response.json();
+      console.log(`Jupiter swap transaction received: ${result.swapTransaction ? 'success' : 'failed'}`);
+      return result;
+    } catch (error) {
+      console.error(`Jupiter swap API fetch failed: ${error.message}`);
+      throw new Error(`Jupiter swap API fetch failed: ${error.message}`);
     }
-
-    return await response.json();
   }
 
   /**
