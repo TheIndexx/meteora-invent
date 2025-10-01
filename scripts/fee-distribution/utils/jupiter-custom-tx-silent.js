@@ -8,7 +8,7 @@ import {
 } from '@solana/web3.js';
 import { createConnection, parsePrivateKey, parsePublicKey } from './solana.js';
 
-const JUPITER_API_URL = 'https://quote-api.jup.ag/v6';
+const JUPITER_API_URL = 'https://lite-api.jup.ag/swap/v1';
 
 /**
  * Silent Jupiter Custom Transaction Builder (no console output)

@@ -2,7 +2,7 @@ import { Keypair, Transaction, VersionedTransaction } from '@solana/web3.js';
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { createConnection, parsePrivateKey, parsePublicKey, retry, sleep } from './solana.js';
 
-const JUPITER_API_URL = 'https://quote-api.jup.ag/v6';
+const JUPITER_API_URL = 'https://lite-api.jup.ag/swap/v1';
 
 /**
  * Jupiter ExactIn Payments-as-Swap Implementation
