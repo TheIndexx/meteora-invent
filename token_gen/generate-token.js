@@ -20,11 +20,7 @@ const {
   mintTo,
   TOKEN_PROGRAM_ID,
   createInitializeMintInstruction,
-<<<<<<< HEAD
-  setAuthority,
-=======
   createSetAuthorityInstruction,
->>>>>>> c0c5220 (removed mint auth)
   AuthorityType,
 } = require('@solana/spl-token');
 const {
@@ -271,25 +267,6 @@ class SimpleTokenLauncher {
           : `https://solscan.io/token/${mint.toString()}?cluster=devnet`
       };
       
-      // Disable mint authority by default unless explicitly kept
-      if (!tokenConfig.keepMintAuthority) {
-        console.log(`\n🔒 Disabling mint authority...`);
-        await setAuthority(
-          this.connection,
-          this.payer,
-          mint,
-          this.payer.publicKey,
-          AuthorityType.MintTokens,
-          null,
-          [],
-          { commitment: 'confirmed' },
-          TOKEN_PROGRAM_ID
-        );
-        console.log(`   ✅ Mint authority set to none`);
-      } else {
-        console.log(`\n⚠️  Keeping mint authority as requested (--keep-mint-authority).`);
-      }
-
       return result;
       
     } catch (error) {
@@ -379,8 +356,7 @@ function parseArguments() {
     output: null,
     createMetadata: false,
     description: null,
-    imageUri: null,
-    keepMintAuthority: false
+    imageUri: null
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -436,9 +412,6 @@ function parseArguments() {
         config.createMetadata = true; // Auto-enable metadata if image provided
         i++;
         break;
-      case '--keep-mint-authority':
-        config.keepMintAuthority = true;
-        break;
       case '--help':
         showHelp();
         process.exit(0);
@@ -493,7 +466,6 @@ OPTIONAL ARGUMENTS:
   --private-key <key>   Private key (base58 or array format)
   --rpc-url <url>       Custom RPC URL
   --output <path>       Output file path for token details
-  --keep-mint-authority Keep the mint authority (by default it is disabled)
 
 METADATA ARGUMENTS:
   --metadata            Enable metadata creation (automatically enabled with --description or --image)
