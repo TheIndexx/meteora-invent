@@ -20,7 +20,11 @@ const {
   mintTo,
   TOKEN_PROGRAM_ID,
   createInitializeMintInstruction,
+<<<<<<< HEAD
   setAuthority,
+=======
+  createSetAuthorityInstruction,
+>>>>>>> c0c5220 (removed mint auth)
   AuthorityType,
 } = require('@solana/spl-token');
 const {
@@ -147,8 +151,8 @@ class SimpleTokenLauncher {
       const initializeMintInstruction = createInitializeMintInstruction(
         mint,
         tokenConfig.decimals,
-        this.payer.publicKey, // mint authority
-        null, // freeze authority
+        this.payer.publicKey, // mint authority (will be revoked after minting)
+        null, // freeze authority (disabled)
         TOKEN_PROGRAM_ID
       );
       
@@ -221,6 +225,28 @@ class SimpleTokenLauncher {
         console.log(`   📝 Mint signature: ${mintSignature}`);
       }
       
+      // Revoke mint authority to make token immutable
+      console.log(`   🔒 Revoking mint authority...`);
+      const revokeMintAuthorityInstruction = createSetAuthorityInstruction(
+        mint,
+        this.payer.publicKey,
+        AuthorityType.MintTokens,
+        null, // Set authority to null (revoke)
+        [],
+        TOKEN_PROGRAM_ID
+      );
+      
+      const revokeTransaction = new Transaction().add(revokeMintAuthorityInstruction);
+      const revokeSignature = await this.connection.sendTransaction(
+        revokeTransaction,
+        [this.payer],
+        { commitment: 'confirmed' }
+      );
+      
+      await this.connection.confirmTransaction(revokeSignature, 'confirmed');
+      console.log(`   ✅ Mint authority revoked successfully!`);
+      console.log(`   📝 Revoke signature: ${revokeSignature}`);
+      
       const result = {
         name: tokenConfig.name,
         symbol: tokenConfig.symbol,
@@ -231,10 +257,13 @@ class SimpleTokenLauncher {
         tokenAccount: tokenAccount ? tokenAccount.address.toString() : null,
         createSignature: signature,
         mintSignature: mintSignature,
+        revokeSignature: revokeSignature,
         metadataAddress: metadataAddress ? metadataAddress.toString() : null,
         hasMetadata: !!tokenConfig.createMetadata,
         description: tokenConfig.description || null,
         imageUri: tokenConfig.imageUri || null,
+        mintAuthorityRevoked: true,
+        freezeAuthorityRevoked: true,
         network: this.network,
         createdAt: new Date().toISOString(),
         explorerUrl: this.network === 'mainnet' 
@@ -494,6 +523,7 @@ NOTES:
   • Images should be publicly accessible URLs (IPFS recommended)
   • Mainnet requires real SOL for transaction fees
   • Minimum balance: 0.02 SOL (for metadata creation)
+  • Mint and freeze authorities are automatically revoked for security
 `);
 }
 
