@@ -1,0 +1,312 @@
+{
+  "success": true,
+  "sourceWallet": "Bjg8CdwzwVu2kAVAHhuZGgHeAE2TkBkdowrMjzZk4Jag",
+  "destinationWallet": "CicxHHtumnAX3A3hkWufZYFQimVfSa3oLkv4ak5D1y3i",
+  "nftsFound": 43,
+  "transferred": 0,
+  "failed": 43,
+  "results": [
+    {
+      "mint": "EHUB2GsEt6i9aV3UNMA8RguAYiisPBAfrWCTGytc7RG4",
+      "name": "Swag of Sudan",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "E4wtByojBokESTWH3dart1THm9CUDVDxZxsf4AeoEfU3",
+      "name": "Tra-Digital Nexus",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "D5HZxcverzpPEhF7mM2rtZ1ssD1dZd6N6R6riHCC45TJ",
+      "name": "Wrapped in Elegance",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "Cmc8sznxed1VWm3ReXUrddsrooRLRemGzCfzokNGnmEf",
+      "name": "Iron Condemn",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "BwPYJ3GWfcRpZH6Uv5uy4dAt3Tsi69TQT4ya8ZnWJ6m8",
+      "name": "REGALIS",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "B9hWqpbsU9JJNZZJphSvNZSFCMQbwFWD78iXhcDftcXg",
+      "name": "Harmony in Hues",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "AUhjsz1bhhMki3PrMSBisN9vc1N9Rr6EGPtQWVU3nHX7",
+      "name": "Digital Glyphs",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "9KA8eYJdXmkZFcz42rgnTaSBS8xH1RXQxAFfsZAdzjMU",
+      "name": "Abstract 23",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "8ubbAqJu6fQnZG9pD5gMDFo9gEoHpktZpwdyVpZvNYTE",
+      "name": "Sands of Time",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "8Q2rcFdPS3oaNzzQU2rMdEtrKKrVmCwY2dKbCxB54Se5",
+      "name": "Glee",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "8LLZ3mToVG7mQUyADSHBnVbjpLQF3cTXeTwCvCFrLEzr",
+      "name": "Ethereal Gaze",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "87SwFBoYEZx8XkW3HYZAzUFztwYWUuv22ykzWYic1yw9",
+      "name": "Majesty Meadows",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "6ncXf8f3JqxsdfU3evfT6Tw35uGHXoWLGNFcXYDS9wd7",
+      "name": "Divergent",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "6juGgaTbCM2xuPFoDwcg4CA9fykGEVGnuTQcHH2DAVCq",
+      "name": "Digital Glyphs",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "6fNFTm1DgrJxq9DTrowzZibTbXRBBBdpb935MZhLFfS3",
+      "name": "Gender Fluid :: Transa",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "6LBRyqevZGWKkEMCGAThWiMmeN47xehQevWPLVhqRwyx",
+      "name": "A Lineage of Tribal Council",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "62ip1VavsDhSf66AzZR8KpmHwXaYpAjqBwHnkmbxwNzN",
+      "name": "OG SKULLZ",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "5zTQe6LiZU2tnN2TfZ4U2rCwT7rDaGWJJJh6wMSuVwLR",
+      "name": "Other Worldly Rastas",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "5SnSdFDauMyNjdgQLTheVdFrD9JN5rnFMRJsudZFqPCw",
+      "name": "REGALIS",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "56E7uSjbPHn2cPAXQi53E2NSPKXAvSMpHnaEVNoJJyRZ",
+      "name": "Gender Fluid :: Transa",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "4s8A4ZQX7dypzL4xigTWXs6qTWb9D9Ggt5fWrUXs9bwd",
+      "name": "ASTRALIS",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "4nsNc94brsx19aPKVPKtCvSPdQGkA4Nbn4DquryhMk8C",
+      "name": "Ethereal Gaze",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "4iLSWzomwvjJdEPp5mb7AMnYr5v2Teidb7eCNFKerjnj",
+      "name": "Infinite Loop of a Lady",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "4f11rhHRi6R2iYkg2krziBq9KNxm85dgS86kHc87iBbG",
+      "name": "Those Puppy Dog Eyes",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "4UuHBpy8RyoY2vbBbvSoX262NFVpjaatGfwH7Dkwv4La",
+      "name": "Divergent",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "4CyHTA7fWn1tVBEpVQ2nFiieB9acF9XpQEvjZhXsQSjd",
+      "name": "Baby Bucktoof",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "44TS6SeE9o9FsqmvdBVsaydtGzUDMgweHZJoJoyxqQnr",
+      "name": "Kaleidoscope of Consciousness",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "3pXaqauqaBSxi6iqUDdtzqN8bgHAG7PYeh8yvX2R5M5D",
+      "name": "Timeless Expressions",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "3hFgRXYZWvkzHzLFsunyACquU7DUp75qkjdfNqFAT9Fn",
+      "name": "Wrapped in Elegance",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "3bT1zDWAunyqGXU3RsPvaw7yGjqJbN4tqZYtABhqUaMq",
+      "name": "The Damsel of Static",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "3a2JQkgQgbyygKGBdRB44Xx9KcQvYz2RvRyF4KGF697q",
+      "name": "The London Tailor",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "3UwwE6DzHS9yd4xBFzvAGrUWoDGTm2wx3q2PNuKfMv9Z",
+      "name": "Gender Fluid :: Transa",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "3Mme7zdvuc65bZzotJXv26gMZnCXsaTHfNgjmTPr6shj",
+      "name": "Ethereal Gaze",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "3CN2aDgHkY29V6oBiYLq24VTxE7bBV7FC5ZvgHsvB9hG",
+      "name": "ASTRALIS",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "2wtahzivKWndomBHje5rpBzwwqP3qub2WpkAqcDNj6Cv",
+      "name": "ASTRALIS",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "2vmHaNtRbCmSCzsR5eNTC2k9QqimCUFJbka2yyu1JnS8",
+      "name": "Iron Condemn",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "2oj5Q7x7W9MTaVVR4HSopygMduugGiwkbDvg6qHSy77U",
+      "name": "Abstract 77",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "2cxnNFLLN4czyUWi7avh9c3C5iHp5jJEKTm2KwVkseSY",
+      "name": "We’re Here On Business",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "2KxW6M94hTvasNYU2oj8q9c8FnBBcXRZdTXdLktY51jL",
+      "name": "Kaleidoscope of Consciousness",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "2ERcxKRRf8UzLdWGy89W8kC4MakhP9GW7xitHFJVPoAZ",
+      "name": "Glee",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "213DNHsFifkSGLN6ueKn8LE3W2TuUawi8Z48dHfGwqTG",
+      "name": "The London Tailor",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "wDfEttZ21hHPKg3WVNLiDznLryyybYgBdJMqj5t34wo",
+      "name": "Clarity in the Fog",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    },
+    {
+      "mint": "ir7ArriQGwPFc1Eob3ykNdHP4Muayh7EnnavbKMLgPb",
+      "name": "REGALIS",
+      "compressed": true,
+      "success": false,
+      "error": "Both compressed NFT transfer methods failed: Cannot find package '@metaplex-foundation/mpl-bubblegum' imported from /Users/rishicadambe/Rishi/BandsRoot/meteora-invent/nft-utils/transfer-nfts.js | rootBytes.copy is not a function"
+    }
+  ],
+  "timestamp": "2025-10-05T20:50:16.760Z"
+}
