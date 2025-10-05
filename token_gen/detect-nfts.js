@@ -242,6 +242,8 @@ class NFTDetector {
           compressed: asset.compression?.compressed || false,
           supply: asset.supply?.print_current_supply || 1,
           decimals: 0,
+          interface: asset.interface,
+          tokenStandard: asset.interface === 'ProgrammableNFT' ? 'ProgrammableNonFungible' : (asset.interface === 'V1_NFT' ? 'NonFungible' : 'Unknown'),
           balance: 1,
           source: 'helius_das',
           endpoint: baseUrl
