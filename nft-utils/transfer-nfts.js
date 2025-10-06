@@ -23,6 +23,10 @@ const {
   createAssociatedTokenAccountInstruction,
   createTransferInstruction,
 } = require('@solana/spl-token');
+
+// Token-2022 (Token Extensions) Program ID
+const TOKEN_2022_PROGRAM_ID = new PublicKey('TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb');
+
 const { NFTDetector } = require('./detect-nfts');
 const bs58 = require('bs58').default;
 const {
@@ -200,14 +204,49 @@ class NFTTransfer {
     }
   }
 
+  async getTokenProgram(mintAddress) {
+    try {
+      const mintPubkey = new PublicKey(mintAddress);
+      const mintAccount = await this.connection.getAccountInfo(mintPubkey);
+      
+      if (!mintAccount) {
+        console.log('⚠️  Mint account not found, defaulting to SPL Token');
+        return TOKEN_PROGRAM_ID;
+      }
+      
+      // Check which program owns the mint
+      if (mintAccount.owner.equals(TOKEN_2022_PROGRAM_ID)) {
+        console.log('🔍 Detected Token-2022 (Token Extensions) NFT');
+        return TOKEN_2022_PROGRAM_ID;
+      }
+      
+      console.log('🔍 Detected regular SPL Token NFT');
+      return TOKEN_PROGRAM_ID;
+      
+    } catch (error) {
+      console.warn(`⚠️  Error detecting token program: ${error.message}, defaulting to SPL Token`);
+      return TOKEN_PROGRAM_ID;
+    }
+  }
+
   async transferRegularNFT(nft, sourceKeypair, destinationPubkey) {
     try {
       const mintPubkey = new PublicKey(nft.mint);
       
-      // Get source token account
+      // Detect the correct token program (SPL Token or Token-2022)
+      const tokenProgram = await this.getTokenProgram(nft.mint);
+      const isToken2022 = tokenProgram.equals(TOKEN_2022_PROGRAM_ID);
+      
+      if (isToken2022) {
+        console.log('📦 Using Token-2022 program for transfer');
+      }
+      
+      // Get source token account (with correct program)
       const sourceTokenAccount = await getAssociatedTokenAddress(
         mintPubkey,
-        sourceKeypair.publicKey
+        sourceKeypair.publicKey,
+        false,  // allowOwnerOffCurve
+        tokenProgram  // <-- Pass dynamic program
       );
 
       // Check source token account state
@@ -228,10 +267,12 @@ class NFTTransfer {
         }
       }
 
-      // Get or create destination token account
+      // Get or create destination token account (with correct program)
       const destinationTokenAccount = await getAssociatedTokenAddress(
         mintPubkey,
-        destinationPubkey
+        destinationPubkey,
+        false,  // allowOwnerOffCurve
+        tokenProgram  // <-- Pass dynamic program
       );
 
       // Check if destination token account exists
@@ -239,24 +280,28 @@ class NFTTransfer {
       
       const transaction = new Transaction();
 
-      // Create destination token account if it doesn't exist
+      // Create destination token account if it doesn't exist (with correct program)
       if (!destinationAccountInfo) {
+        console.log(`🔧 Creating ${isToken2022 ? 'Token-2022' : 'SPL Token'} associated token account for destination...`);
         const createATAInstruction = createAssociatedTokenAccountInstruction(
           sourceKeypair.publicKey, // payer
           destinationTokenAccount,
           destinationPubkey, // owner
-          mintPubkey
+          mintPubkey,
+          tokenProgram,  // <-- Pass dynamic program
+          ASSOCIATED_TOKEN_PROGRAM_ID
         );
         transaction.add(createATAInstruction);
       }
 
-      // Create transfer instruction
+      // Create transfer instruction (with correct program)
       const transferInstruction = createTransferInstruction(
         sourceTokenAccount,
         destinationTokenAccount,
         sourceKeypair.publicKey,
         1, // NFTs have amount of 1
-        []
+        [],
+        tokenProgram  // <-- Pass dynamic program
       );
       transaction.add(transferInstruction);
 
