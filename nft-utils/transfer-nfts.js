@@ -27,6 +27,9 @@ const {
 // Token-2022 (Token Extensions) Program ID
 const TOKEN_2022_PROGRAM_ID = new PublicKey('TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb');
 
+// Metaplex Core Program ID
+const METAPLEX_CORE_PROGRAM_ID = new PublicKey('CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d');
+
 const { NFTDetector } = require('./detect-nfts');
 const bs58 = require('bs58').default;
 const {
@@ -36,6 +39,11 @@ const {
   findMasterEditionPda,
   getTransferV1InstructionDataSerializer
 } = require('@metaplex-foundation/mpl-token-metadata');
+
+// Import Metaplex Core for Core NFTs
+const { createUmi } = require('@metaplex-foundation/umi-bundle-defaults');
+const { transferV1: transferCoreV1, fetchAssetV1 } = require('@metaplex-foundation/mpl-core');
+const { publicKey: umiPublicKey, generateSigner, signerIdentity, createSignerFromKeypair } = require('@metaplex-foundation/umi');
 
 class NFTTransfer {
   constructor(rpcUrl = null) {
@@ -215,6 +223,11 @@ class NFTTransfer {
       }
       
       // Check which program owns the mint
+      if (mintAccount.owner.equals(METAPLEX_CORE_PROGRAM_ID)) {
+        console.log('🔍 Detected Metaplex Core NFT');
+        return METAPLEX_CORE_PROGRAM_ID;
+      }
+      
       if (mintAccount.owner.equals(TOKEN_2022_PROGRAM_ID)) {
         console.log('🔍 Detected Token-2022 (Token Extensions) NFT');
         return TOKEN_2022_PROGRAM_ID;
@@ -229,12 +242,83 @@ class NFTTransfer {
     }
   }
 
+  async transferCoreNFT(nft, sourceKeypair, destinationPubkey) {
+    try {
+      console.log('🌟 Transferring Metaplex Core NFT...');
+      
+      // Create UMI instance
+      const umi = createUmi(this.rpcUrl);
+      
+      // Convert source keypair to UMI format
+      const sourceSecretKey = sourceKeypair.secretKey;
+      const umiKeypair = {
+        publicKey: umiPublicKey(sourceKeypair.publicKey.toString()),
+        secretKey: sourceSecretKey
+      };
+      const umiSigner = createSignerFromKeypair(umi, umiKeypair);
+      umi.use(signerIdentity(umiSigner));
+      
+      // Convert addresses to UMI format
+      const assetId = umiPublicKey(nft.mint);
+      const newOwner = umiPublicKey(destinationPubkey.toString());
+      
+      console.log(`🔍 Core Asset ID: ${nft.mint}`);
+      console.log(`🔍 New Owner: ${destinationPubkey.toString()}`);
+      
+      // Fetch the Core asset to get collection info (if any)
+      let collection = null;
+      try {
+        const asset = await fetchAssetV1(umi, assetId);
+        collection = asset.updateAuthority.type === 'Collection' ? asset.updateAuthority.address : null;
+        if (collection) {
+          console.log(`🔍 Collection: ${collection}`);
+        }
+      } catch (fetchError) {
+        console.log('⚠️  Could not fetch asset metadata, proceeding without collection info');
+      }
+      
+      // Build Core transfer instruction
+      console.log('🔨 Building Core transfer instruction...');
+      const transferInstruction = transferCoreV1(umi, {
+        asset: assetId,
+        newOwner: newOwner,
+        collection: collection || undefined,
+      });
+      
+      // Send and confirm transaction
+      console.log('📤 Sending Core NFT transfer transaction...');
+      const result = await transferInstruction.sendAndConfirm(umi, {
+        confirm: { commitment: 'confirmed' }
+      });
+      
+      // Extract transaction signature from result
+      const signature = bs58.encode(result.signature);
+      console.log(`✅ Core NFT transferred successfully: ${signature}`);
+      
+      return signature;
+      
+    } catch (error) {
+      console.error(`❌ Error transferring Core NFT: ${error.message}`);
+      if (error.logs) {
+        console.error('Transaction logs:', error.logs);
+      }
+      throw error;
+    }
+  }
+
   async transferRegularNFT(nft, sourceKeypair, destinationPubkey) {
     try {
       const mintPubkey = new PublicKey(nft.mint);
       
-      // Detect the correct token program (SPL Token or Token-2022)
+      // Detect the correct token program (SPL Token, Token-2022, or Core)
       const tokenProgram = await this.getTokenProgram(nft.mint);
+      
+      // Check if this is a Metaplex Core NFT
+      if (tokenProgram.equals(METAPLEX_CORE_PROGRAM_ID)) {
+        console.log('📦 Routing to Metaplex Core transfer handler');
+        return await this.transferCoreNFT(nft, sourceKeypair, destinationPubkey);
+      }
+      
       const isToken2022 = tokenProgram.equals(TOKEN_2022_PROGRAM_ID);
       
       if (isToken2022) {
